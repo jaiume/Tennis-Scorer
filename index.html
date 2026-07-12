@@ -48,6 +48,8 @@
   .label{font-size:10px;color:#c2cec4;line-height:1.1}
   .score{font-size:clamp(14px,3.8vh,26px);font-weight:900;line-height:1}
   .btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;width:108px}
+  .btns.auto{grid-template-columns:1fr 1fr;width:76px}
+  .btns.auto .zeroBtn{display:none}
   button{border:0;border-radius:8px;padding:10px;font-size:14px;font-weight:800;touch-action:manipulation}
   .btns button{
     padding:0;min-width:0;min-height:38px;height:100%;
@@ -158,7 +160,7 @@
           <div><div class="label">Score</div><div class="score" id="p0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 pointBtn" data-player="0" data-delta="-1">−</button>
-            <button type="button" class="p1 pointBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
+            <button type="button" class="p1 pointBtn zeroBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 pointBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -166,7 +168,7 @@
           <div><div class="label">Games</div><div class="score" id="g0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 gameBtn" data-player="0" data-delta="-1">−</button>
-            <button type="button" class="p1 gameBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
+            <button type="button" class="p1 gameBtn zeroBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 gameBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -174,7 +176,7 @@
           <div><div class="label">Sets</div><div class="score" id="s0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 setBtn" data-player="0" data-delta="-1">−</button>
-            <button type="button" class="p1 setBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
+            <button type="button" class="p1 setBtn zeroBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 setBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -188,7 +190,7 @@
           <div><div class="label">Score</div><div class="score" id="p1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 pointBtn" data-player="1" data-delta="-1">−</button>
-            <button type="button" class="p2 pointBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
+            <button type="button" class="p2 pointBtn zeroBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 pointBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
@@ -196,7 +198,7 @@
           <div><div class="label">Games</div><div class="score" id="g1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 gameBtn" data-player="1" data-delta="-1">−</button>
-            <button type="button" class="p2 gameBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
+            <button type="button" class="p2 gameBtn zeroBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 gameBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
@@ -204,7 +206,7 @@
           <div><div class="label">Sets</div><div class="score" id="s1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 setBtn" data-player="1" data-delta="-1">−</button>
-            <button type="button" class="p2 setBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
+            <button type="button" class="p2 setBtn zeroBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 setBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
@@ -469,12 +471,19 @@
     });
   }
 
+  function updateControlsLayout(){
+    document.querySelectorAll(".btns").forEach(function(group){
+      group.classList.toggle("auto", settings.autoIncrement);
+    });
+  }
+
   function render(){
     for(let i=0;i<2;i++){
       document.getElementById("p"+i).textContent = pointLabel(state.points[i]);
       document.getElementById("g"+i).textContent = state.games[i];
       document.getElementById("s"+i).textContent = state.sets[i];
     }
+    updateControlsLayout();
     renderSetLog();
   }
 
@@ -507,6 +516,7 @@
   document.getElementById("autoIncrement").addEventListener("change", function(){
     settings.autoIncrement = this.checked;
     saveSettings();
+    updateControlsLayout();
   });
 
   document.querySelectorAll('input[name="scoringType"]').forEach(function(radio){
