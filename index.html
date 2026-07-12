@@ -346,9 +346,9 @@
   function pointLabel(value){
     if(settings.scoringType === "integer") return String(value);
     if(settings.scoringType === "tennis-simple"){
-      return ["Love","15","30","40","Game"][value] || String(value);
+      return ["0","15","30","40","Game"][value] || String(value);
     }
-    return ["Love","15","30","40","AD"][value] || String(value);
+    return ["0","15","30","40","AD"][value] || String(value);
   }
 
   function manualPointMax(){
