@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Tennis Scorekeeper</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;background:#101512;color:#fff}
+  .wrap{max-width:760px;margin:auto;padding:18px}
+  h1{text-align:center}
+  .players{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{background:#1b241e;border:1px solid #3b4f40;border-radius:16px;padding:14px}
+  input{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #4d6553;background:#111713;color:#fff;font-size:18px;font-weight:700;text-align:center;margin-bottom:10px}
+  .row{display:grid;grid-template-columns:1fr 110px;align-items:center;gap:10px;margin:10px 0}
+  .label{font-size:14px;color:#c2cec4}
+  .score{font-size:34px;font-weight:900}
+  button{border:0;border-radius:12px;padding:15px;font-size:17px;font-weight:800;touch-action:manipulation}
+  .p1{background:#b8ff3d;color:#132000}
+  .p2{background:#69c6ff;color:#061a24}
+  .bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+  .bottom button{background:#2a372e;color:#fff;border:1px solid #48604f}
+  #jsWarning{background:#6b2d2d;padding:12px;border-radius:10px;text-align:center;margin-bottom:12px}
+  @media(max-width:560px){.players{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎾 Tennis Score</h1>
+  <div id="jsWarning">JavaScript has not started. Open this file in Safari or Chrome.</div>
+
+  <div class="players">
+    <div class="card">
+      <input value="Player 1">
+      <div class="row">
+        <div><div class="label">In-game score</div><div class="score" id="p0">0</div></div>
+        <button type="button" class="p1 pointBtn" data-player="0">+ Point</button>
+      </div>
+      <div class="row">
+        <div><div class="label">Games</div><div class="score" id="g0">0</div></div>
+        <button type="button" class="p1 gameBtn" data-player="0">+ Game</button>
+      </div>
+      <div class="row">
+        <div><div class="label">Sets</div><div class="score" id="s0">0</div></div>
+        <button type="button" class="p1 setBtn" data-player="0">+ Set</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <input value="Player 2">
+      <div class="row">
+        <div><div class="label">In-game score</div><div class="score" id="p1">0</div></div>
+        <button type="button" class="p2 pointBtn" data-player="1">+ Point</button>
+      </div>
+      <div class="row">
+        <div><div class="label">Games</div><div class="score" id="g1">0</div></div>
+        <button type="button" class="p2 gameBtn" data-player="1">+ Game</button>
+      </div>
+      <div class="row">
+        <div><div class="label">Sets</div><div class="score" id="s1">0</div></div>
+        <button type="button" class="p2 setBtn" data-player="1">+ Set</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <button type="button" id="undoBtn">↩ Undo</button>
+    <button type="button" id="resetBtn">Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const pointLabels = ["0","15","30","40","AD"];
+  let state = {points:[0,0],games:[0,0],sets:[0,0]};
+  let history = [];
+
+  document.getElementById("jsWarning").style.display = "none";
+
+  function save(){
+    history.push(JSON.stringify(state));
+    if(history.length > 100) history.shift();
+  }
+
+  function render(){
+    for(let i=0;i<2;i++){
+      document.getElementById("p"+i).textContent = pointLabels[state.points[i]];
+      document.getElementById("g"+i).textContent = state.games[i];
+      document.getElementById("s"+i).textContent = state.sets[i];
+    }
+  }
+
+  document.querySelectorAll(".pointBtn").forEach(btn=>{
+    btn.addEventListener("click", function(){
+      const i = Number(this.dataset.player);
+      save();
+      state.points[i] = (state.points[i] + 1) % pointLabels.length;
+      render();
+    });
+  });
+
+  document.querySelectorAll(".gameBtn").forEach(btn=>{
+    btn.addEventListener("click", function(){
+      const i = Number(this.dataset.player);
+      save();
+      state.games[i]++;
+      render();
+    });
+  });
+
+  document.querySelectorAll(".setBtn").forEach(btn=>{
+    btn.addEventListener("click", function(){
+      const i = Number(this.dataset.player);
+      save();
+      state.sets[i]++;
+      render();
+    });
+  });
+
+  document.getElementById("undoBtn").addEventListener("click", function(){
+    if(!history.length) return;
+    state = JSON.parse(history.pop());
+    render();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    save();
+    state = {points:[0,0],games:[0,0],sets:[0,0]};
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
