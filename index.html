@@ -19,8 +19,9 @@
   .btns button{padding:15px 0;min-width:0}
   .p1{background:#b8ff3d;color:#132000}
   .p2{background:#69c6ff;color:#061a24}
-  .bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+  .bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:15px}
   .bottom button{background:#2a372e;color:#fff;border:1px solid #48604f}
+  #shareBtn{background:#b8ff3d;color:#132000;border:0}
   #jsWarning{background:#6b2d2d;padding:12px;border-radius:10px;text-align:center;margin-bottom:12px}
   @media(max-width:560px){.players{grid-template-columns:1fr}}
 </style>
@@ -32,7 +33,7 @@
 
   <div class="players">
     <div class="card">
-      <input value="Player 1">
+      <input id="n0" value="Player 1">
       <div class="row">
         <div><div class="label">In-game score</div><div class="score" id="p0">0</div></div>
         <div class="btns">
@@ -57,7 +58,7 @@
     </div>
 
     <div class="card">
-      <input value="Player 2">
+      <input id="n1" value="Player 2">
       <div class="row">
         <div><div class="label">In-game score</div><div class="score" id="p1">0</div></div>
         <div class="btns">
@@ -84,6 +85,7 @@
 
   <div class="bottom">
     <button type="button" id="undoBtn">↩ Undo</button>
+    <button type="button" id="shareBtn">Share</button>
     <button type="button" id="resetBtn">Reset</button>
   </div>
 </div>
@@ -155,6 +157,121 @@
     save();
     state = {points:[0,0],games:[0,0],sets:[0,0]};
     render();
+  });
+
+  function playerName(i){
+    const el = document.getElementById("n"+i);
+    return (el && el.value.trim()) || ("Player " + (i + 1));
+  }
+
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function buildScoreBlob(){
+    const W = 1080, H = 720, dpr = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+
+    ctx.fillStyle = "#101512";
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 48px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Tennis Score", W / 2, 78);
+
+    const names = [playerName(0), playerName(1)];
+    const accents = ["#b8ff3d", "#69c6ff"];
+    const cardW = 460, cardH = 480, gap = 40;
+    const startX = (W - (cardW * 2 + gap)) / 2;
+    const startY = 120;
+
+    for(let i = 0; i < 2; i++){
+      const x = startX + i * (cardW + gap);
+      const y = startY;
+
+      ctx.fillStyle = "#1b241e";
+      roundRect(ctx, x, y, cardW, cardH, 28);
+      ctx.fill();
+      ctx.strokeStyle = "#3b4f40";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.fillStyle = accents[i];
+      roundRect(ctx, x + 28, y + 28, cardW - 56, 70, 16);
+      ctx.fill();
+      ctx.fillStyle = i === 0 ? "#132000" : "#061a24";
+      ctx.font = "800 34px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      const name = names[i].length > 18 ? names[i].slice(0, 17) + "…" : names[i];
+      ctx.fillText(name, x + cardW / 2, y + 74);
+
+      const rows = [
+        ["Points", pointLabels[state.points[i]]],
+        ["Games", String(state.games[i])],
+        ["Sets", String(state.sets[i])]
+      ];
+      rows.forEach(function(row, ri){
+        const ry = y + 150 + ri * 100;
+        ctx.fillStyle = "#c2cec4";
+        ctx.font = "600 28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(row[0], x + 40, ry);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 64px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(row[1], x + cardW - 40, ry + 10);
+      });
+    }
+
+    return new Promise(function(resolve){
+      canvas.toBlob(function(blob){ resolve(blob); }, "image/png");
+    });
+  }
+
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  document.getElementById("shareBtn").addEventListener("click", async function(){
+    const btn = this;
+    btn.disabled = true;
+    try{
+      const blob = await buildScoreBlob();
+      if(!blob) throw new Error("Could not create image");
+      const file = new File([blob], "tennis-score.png", { type: "image/png" });
+      const summary = playerName(0) + " " + pointLabels[state.points[0]] + "/" + state.games[0] + "/" + state.sets[0]
+        + " vs " + playerName(1) + " " + pointLabels[state.points[1]] + "/" + state.games[1] + "/" + state.sets[1];
+      const shareData = { files: [file], title: "Tennis Score", text: summary };
+
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share(shareData);
+      } else {
+        downloadBlob(blob, "tennis-score.png");
+      }
+    } catch(err){
+      if(err && err.name === "AbortError") return;
+      alert("Sharing failed. Try again or take a screenshot.");
+    } finally {
+      btn.disabled = false;
+    }
   });
 
   render();
