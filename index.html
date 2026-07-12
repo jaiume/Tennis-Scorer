@@ -19,17 +19,27 @@
     padding:6px 8px 8px;
     display:flex;flex-direction:column;gap:6px;
   }
-  h1{text-align:center;margin:0;font-size:20px;line-height:1.1;flex:0 0 auto}
+  .top{
+    display:grid;grid-template-columns:40px 1fr 40px;align-items:center;
+    flex:0 0 auto;
+  }
+  h1{text-align:center;margin:0;font-size:20px;line-height:1.1}
+  #settingsBtn{
+    width:40px;height:40px;border-radius:10px;padding:0;
+    background:#2a372e;color:#fff;border:1px solid #48604f;
+    font-size:20px;line-height:1;
+  }
   .players{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1 1 auto;min-height:0}
   .card{
     background:#1b241e;border:1px solid #3b4f40;border-radius:12px;padding:6px;
     display:flex;flex-direction:column;min-height:0;
   }
-  input{
+  input,select{
     width:100%;padding:7px;border-radius:8px;border:1px solid #4d6553;
     background:#111713;color:#fff;font-size:14px;font-weight:700;text-align:center;
-    margin:0 0 4px;flex:0 0 auto;
+    margin:0;flex:0 0 auto;
   }
+  .card > input{margin:0 0 4px}
   .rows{display:flex;flex-direction:column;gap:4px;flex:1 1 auto;min-height:0}
   .row{
     display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px;
@@ -66,11 +76,78 @@
   .bottom button{background:#2a372e;color:#fff;border:1px solid #48604f;padding:10px 8px;font-size:13px}
   #shareBtn{background:#b8ff3d;color:#132000;border:0}
   #jsWarning{display:none;background:#6b2d2d;padding:8px;border-radius:8px;text-align:center;font-size:13px}
+
+  .settingsOverlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);
+    display:none;align-items:flex-end;justify-content:center;z-index:50;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .settingsOverlay.open{display:flex}
+  .settingsPanel{
+    width:min(520px,100%);max-height:min(88svh,720px);
+    background:#151c17;border:1px solid #3b4f40;border-radius:16px 16px 0 0;
+    padding:14px 14px 18px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  .settingsHead{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin-bottom:12px;
+  }
+  .settingsHead h2{margin:0;font-size:20px}
+  #settingsClose{
+    background:#2a372e;color:#fff;border:1px solid #48604f;
+    width:36px;height:36px;border-radius:10px;padding:0;font-size:18px;
+  }
+  .settingBlock{
+    background:#1b241e;border:1px solid #3b4f40;border-radius:12px;
+    padding:12px;margin-bottom:10px;
+  }
+  .settingBlock h3{margin:0 0 8px;font-size:14px;color:#c2cec4;font-weight:700}
+  .settingRow{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin:8px 0;
+  }
+  .settingRow label{font-size:15px;font-weight:700}
+  .settingHint{font-size:12px;color:#7f8f84;margin:4px 0 0;line-height:1.35}
+  .switch{
+    position:relative;width:48px;height:28px;flex:0 0 auto;
+  }
+  .switch input{opacity:0;width:0;height:0}
+  .switch span{
+    position:absolute;inset:0;background:#2a372e;border:1px solid #48604f;
+    border-radius:999px;transition:.15s;
+  }
+  .switch span:before{
+    content:"";position:absolute;width:22px;height:22px;left:2px;top:2px;
+    background:#c2cec4;border-radius:50%;transition:.15s;
+  }
+  .switch input:checked + span{background:#b8ff3d;border-color:#b8ff3d}
+  .switch input:checked + span:before{transform:translateX(20px);background:#132000}
+  .scoringOptions{display:flex;flex-direction:column;gap:8px}
+  .scoringOption{
+    display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;
+    background:#111713;border:1px solid #4d6553;border-radius:10px;padding:10px;
+  }
+  .scoringOption strong{display:block;font-size:14px}
+  .scoringOption span{display:block;font-size:12px;color:#7f8f84;margin-top:2px;font-weight:500}
+  .inlineN{
+    display:flex;align-items:center;gap:8px;margin-top:8px;
+  }
+  .inlineN label{font-size:13px;color:#c2cec4;font-weight:600}
+  .inlineN input{
+    width:72px;text-align:center;font-size:15px;padding:8px;margin:0;
+  }
+  .settingsPanel input[type="number"]{-moz-appearance:textfield}
+  .settingsPanel input[type="number"]::-webkit-outer-spin-button,
+  .settingsPanel input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>🎾 Tennis Score</h1>
+  <div class="top">
+    <div></div>
+    <h1>🎾 Tennis Score</h1>
+    <button type="button" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
+  </div>
   <div id="jsWarning">JavaScript has not started. Open this file in Safari or Chrome.</div>
 
   <div class="players">
@@ -147,13 +224,110 @@
   </div>
 </div>
 
+<div class="settingsOverlay" id="settingsOverlay" aria-hidden="true">
+  <div class="settingsPanel" role="dialog" aria-labelledby="settingsTitle">
+    <div class="settingsHead">
+      <h2 id="settingsTitle">Settings</h2>
+      <button type="button" id="settingsClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="settingBlock">
+      <h3>Auto increment</h3>
+      <div class="settingRow">
+        <label for="autoIncrement">Increment games &amp; sets automatically</label>
+        <label class="switch">
+          <input type="checkbox" id="autoIncrement">
+          <span></span>
+        </label>
+      </div>
+      <p class="settingHint">When on, winning a game zeros the score and adds a game. Reaching the set target zeros games, adds a set, and records the set result.</p>
+    </div>
+
+    <div class="settingBlock">
+      <h3>Game scoring type</h3>
+      <div class="scoringOptions">
+        <label class="scoringOption">
+          <input type="radio" name="scoringType" value="integer">
+          <div>
+            <strong>Integer</strong>
+            <span>1, 2, 3 … N</span>
+            <div class="inlineN">
+              <label for="integerN">N</label>
+              <input type="number" id="integerN" min="1" max="99" value="11" inputmode="numeric">
+            </div>
+          </div>
+        </label>
+        <label class="scoringOption">
+          <input type="radio" name="scoringType" value="tennis-simple">
+          <div>
+            <strong>Tennis simple</strong>
+            <span>Love, 15, 30, 40, game</span>
+          </div>
+        </label>
+        <label class="scoringOption">
+          <input type="radio" name="scoringType" value="tennis-adult" checked>
+          <div>
+            <strong>Tennis adult</strong>
+            <span>Love, 15, 30, 40, AD</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="settingBlock">
+      <h3>Set winner</h3>
+      <div class="inlineN" style="margin-top:0">
+        <label for="setFirstTo">First to</label>
+        <input type="number" id="setFirstTo" min="1" max="99" value="6" inputmode="numeric">
+        <label for="setFirstTo">games</label>
+      </div>
+      <p class="settingHint">Used when auto increment is on.</p>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
-  const pointLabels = ["0","15","30","40","AD"];
+  const SETTINGS_KEY = "tennis-scorekeeper-settings";
+  const defaultSettings = {
+    autoIncrement: false,
+    scoringType: "tennis-adult",
+    integerN: 11,
+    setFirstTo: 6
+  };
+
+  let settings = loadSettings();
   let state = {points:[0,0],games:[0,0],sets:[0,0],setLog:[]};
   let history = [];
 
   document.getElementById("jsWarning").style.display = "none";
+
+  function loadSettings(){
+    try{
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if(!raw) return Object.assign({}, defaultSettings);
+      const parsed = JSON.parse(raw);
+      return Object.assign({}, defaultSettings, parsed, {
+        integerN: clampInt(parsed.integerN, 1, 99, 11),
+        setFirstTo: clampInt(parsed.setFirstTo, 1, 99, 6),
+        scoringType: ["integer","tennis-simple","tennis-adult"].indexOf(parsed.scoringType) >= 0
+          ? parsed.scoringType : "tennis-adult",
+        autoIncrement: !!parsed.autoIncrement
+      });
+    } catch(e){
+      return Object.assign({}, defaultSettings);
+    }
+  }
+
+  function saveSettings(){
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }
+
+  function clampInt(value, min, max, fallback){
+    const n = Number(value);
+    if(!Number.isFinite(n)) return fallback;
+    return Math.max(min, Math.min(max, Math.round(n)));
+  }
 
   function snapshot(){
     return JSON.stringify(state);
@@ -167,6 +341,103 @@
   function playerName(i){
     const el = document.getElementById("n"+i);
     return (el && el.value.trim()) || ("Player " + (i + 1));
+  }
+
+  function pointLabel(value){
+    if(settings.scoringType === "integer") return String(value);
+    if(settings.scoringType === "tennis-simple"){
+      return ["Love","15","30","40","Game"][value] || String(value);
+    }
+    return ["Love","15","30","40","AD"][value] || String(value);
+  }
+
+  function manualPointMax(){
+    if(settings.scoringType === "integer") return settings.integerN + 1;
+    if(settings.scoringType === "tennis-simple") return 5;
+    return 5;
+  }
+
+  function wrap(value, max){
+    return ((value % max) + max) % max;
+  }
+
+  function awardSet(winner){
+    const other = 1 - winner;
+    state.setLog.push({
+      winner: winner,
+      winnerName: playerName(winner),
+      winnerGames: state.games[winner],
+      loserGames: state.games[other]
+    });
+    state.sets[winner]++;
+    state.games = [0, 0];
+    state.points = [0, 0];
+  }
+
+  function awardGame(winner){
+    state.games[winner]++;
+    state.points = [0, 0];
+    if(settings.autoIncrement && state.games[winner] >= settings.setFirstTo){
+      awardSet(winner);
+    }
+  }
+
+  function applyAdultPoint(winner){
+    const loser = 1 - winner;
+    const w = state.points[winner];
+    const l = state.points[loser];
+
+    if(w < 3){
+      state.points[winner] = w + 1;
+      return;
+    }
+    if(w === 3){
+      if(l < 3){
+        awardGame(winner);
+      } else if(l === 3){
+        state.points[winner] = 4;
+      } else if(l === 4){
+        state.points[loser] = 3;
+      }
+      return;
+    }
+    if(w === 4){
+      awardGame(winner);
+    }
+  }
+
+  function applySimplePoint(winner){
+    if(state.points[winner] < 3){
+      state.points[winner] += 1;
+      return;
+    }
+    awardGame(winner);
+  }
+
+  function applyIntegerPoint(winner){
+    state.points[winner] += 1;
+    if(state.points[winner] >= settings.integerN){
+      awardGame(winner);
+    }
+  }
+
+  function addPointAuto(winner){
+    if(settings.scoringType === "integer") applyIntegerPoint(winner);
+    else if(settings.scoringType === "tennis-simple") applySimplePoint(winner);
+    else applyAdultPoint(winner);
+  }
+
+  function removePointAuto(player){
+    if(settings.scoringType === "integer"){
+      state.points[player] = Math.max(0, state.points[player] - 1);
+      return;
+    }
+    if(settings.scoringType === "tennis-simple"){
+      state.points[player] = Math.max(0, Math.min(3, state.points[player] - 1));
+      return;
+    }
+    // tennis-adult: simple step back
+    if(state.points[player] > 0) state.points[player] -= 1;
   }
 
   function renderSetLog(){
@@ -200,24 +471,91 @@
 
   function render(){
     for(let i=0;i<2;i++){
-      document.getElementById("p"+i).textContent = pointLabels[state.points[i]];
+      document.getElementById("p"+i).textContent = pointLabel(state.points[i]);
       document.getElementById("g"+i).textContent = state.games[i];
       document.getElementById("s"+i).textContent = state.sets[i];
     }
     renderSetLog();
   }
 
-  function wrap(value, max){
-    return ((value % max) + max) % max;
+  function syncSettingsForm(){
+    document.getElementById("autoIncrement").checked = settings.autoIncrement;
+    document.getElementById("integerN").value = settings.integerN;
+    document.getElementById("setFirstTo").value = settings.setFirstTo;
+    document.querySelectorAll('input[name="scoringType"]').forEach(function(radio){
+      radio.checked = radio.value === settings.scoringType;
+    });
   }
+
+  function openSettings(){
+    syncSettingsForm();
+    document.getElementById("settingsOverlay").classList.add("open");
+    document.getElementById("settingsOverlay").setAttribute("aria-hidden", "false");
+  }
+
+  function closeSettings(){
+    document.getElementById("settingsOverlay").classList.remove("open");
+    document.getElementById("settingsOverlay").setAttribute("aria-hidden", "true");
+  }
+
+  document.getElementById("settingsBtn").addEventListener("click", openSettings);
+  document.getElementById("settingsClose").addEventListener("click", closeSettings);
+  document.getElementById("settingsOverlay").addEventListener("click", function(e){
+    if(e.target === this) closeSettings();
+  });
+
+  document.getElementById("autoIncrement").addEventListener("change", function(){
+    settings.autoIncrement = this.checked;
+    saveSettings();
+  });
+
+  document.querySelectorAll('input[name="scoringType"]').forEach(function(radio){
+    radio.addEventListener("change", function(){
+      if(!this.checked) return;
+      const prev = settings.scoringType;
+      settings.scoringType = this.value;
+      saveSettings();
+      if(prev !== settings.scoringType){
+        save();
+        state.points = [0, 0];
+        render();
+      }
+    });
+  });
+
+  document.getElementById("integerN").addEventListener("change", function(){
+    settings.integerN = clampInt(this.value, 1, 99, 11);
+    this.value = settings.integerN;
+    saveSettings();
+    if(settings.scoringType === "integer"){
+      save();
+      state.points = [
+        Math.min(state.points[0], settings.integerN - 1),
+        Math.min(state.points[1], settings.integerN - 1)
+      ];
+      render();
+    }
+  });
+
+  document.getElementById("setFirstTo").addEventListener("change", function(){
+    settings.setFirstTo = clampInt(this.value, 1, 99, 6);
+    this.value = settings.setFirstTo;
+    saveSettings();
+  });
 
   document.querySelectorAll(".pointBtn").forEach(btn=>{
     btn.addEventListener("click", function(){
       const i = Number(this.dataset.player);
       const delta = Number(this.dataset.delta);
       save();
-      if(delta === 0) state.points[i] = 0;
-      else state.points[i] = wrap(state.points[i] + delta, pointLabels.length);
+      if(delta === 0){
+        state.points[i] = 0;
+      } else if(settings.autoIncrement){
+        if(delta > 0) addPointAuto(i);
+        else removePointAuto(i);
+      } else {
+        state.points[i] = wrap(state.points[i] + delta, manualPointMax());
+      }
       render();
     });
   });
@@ -229,8 +567,19 @@
       if(delta < 0 && state.games[i] <= 0) return;
       if(delta === 0 && state.games[i] === 0) return;
       save();
-      if(delta === 0) state.games[i] = 0;
-      else state.games[i] = Math.max(0, state.games[i] + delta);
+      if(delta === 0){
+        state.games[i] = 0;
+      } else if(delta < 0){
+        state.games[i] = Math.max(0, state.games[i] - 1);
+      } else {
+        state.games[i] += 1;
+        if(settings.autoIncrement){
+          state.points = [0, 0];
+          if(state.games[i] >= settings.setFirstTo){
+            awardSet(i);
+          }
+        }
+      }
       render();
     });
   });
@@ -333,7 +682,7 @@
       ctx.fillText(name, x + cardW / 2, y + 74);
 
       const rows = [
-        ["Points", pointLabels[state.points[i]]],
+        ["Points", pointLabel(state.points[i])],
         ["Games", String(state.games[i])],
         ["Sets", String(state.sets[i])]
       ];
@@ -388,8 +737,8 @@
       const blob = await buildScoreBlob();
       if(!blob) throw new Error("Could not create image");
       const file = new File([blob], "tennis-score.png", { type: "image/png" });
-      const summary = playerName(0) + " " + pointLabels[state.points[0]] + "/" + state.games[0] + "/" + state.sets[0]
-        + " vs " + playerName(1) + " " + pointLabels[state.points[1]] + "/" + state.games[1] + "/" + state.sets[1];
+      const summary = playerName(0) + " " + pointLabel(state.points[0]) + "/" + state.games[0] + "/" + state.sets[0]
+        + " vs " + playerName(1) + " " + pointLabel(state.points[1]) + "/" + state.games[1] + "/" + state.sets[1];
       const shareData = { files: [file], title: "Tennis Score", text: summary };
 
       if(navigator.canShare && navigator.canShare({ files: [file] })){
@@ -405,6 +754,7 @@
     }
   });
 
+  syncSettingsForm();
   render();
 })();
 </script>
