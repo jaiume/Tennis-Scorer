@@ -81,7 +81,7 @@
           <div><div class="label">Score</div><div class="score" id="p0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 pointBtn" data-player="0" data-delta="-1">−</button>
-            <button type="button" class="p1 pointBtn" data-player="0" data-delta="0">0</button>
+            <button type="button" class="p1 pointBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 pointBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -89,7 +89,7 @@
           <div><div class="label">Games</div><div class="score" id="g0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 gameBtn" data-player="0" data-delta="-1">−</button>
-            <button type="button" class="p1 gameBtn" data-player="0" data-delta="0">0</button>
+            <button type="button" class="p1 gameBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 gameBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -97,7 +97,7 @@
           <div><div class="label">Sets</div><div class="score" id="s0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 setBtn" data-player="0" data-delta="-1">−</button>
-            <button type="button" class="p1 setBtn" data-player="0" data-delta="0">0</button>
+            <button type="button" class="p1 setBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 setBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -111,7 +111,7 @@
           <div><div class="label">Score</div><div class="score" id="p1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 pointBtn" data-player="1" data-delta="-1">−</button>
-            <button type="button" class="p2 pointBtn" data-player="1" data-delta="0">0</button>
+            <button type="button" class="p2 pointBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 pointBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
@@ -119,7 +119,7 @@
           <div><div class="label">Games</div><div class="score" id="g1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 gameBtn" data-player="1" data-delta="-1">−</button>
-            <button type="button" class="p2 gameBtn" data-player="1" data-delta="0">0</button>
+            <button type="button" class="p2 gameBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 gameBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
@@ -127,7 +127,7 @@
           <div><div class="label">Sets</div><div class="score" id="s1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 setBtn" data-player="1" data-delta="-1">−</button>
-            <button type="button" class="p2 setBtn" data-player="1" data-delta="0">0</button>
+            <button type="button" class="p2 setBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 setBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
@@ -189,10 +189,7 @@
       del.textContent = "Delete";
       del.addEventListener("click", function(){
         save();
-        const removed = state.setLog.splice(index, 1)[0];
-        if(removed){
-          state.sets[removed.winner] = Math.max(0, state.sets[removed.winner] - 1);
-        }
+        state.setLog.splice(index, 1);
         render();
       });
       row.appendChild(text);
@@ -257,19 +254,10 @@
           loserGames: state.games[other]
         });
         state.sets[i]++;
-        state.games = [0, 0];
-        state.points = [0, 0];
       } else if(delta === 0){
         state.sets[i] = 0;
-        state.setLog = state.setLog.filter(function(entry){ return entry.winner !== i; });
       } else {
         state.sets[i] = Math.max(0, state.sets[i] - 1);
-        for(let j = state.setLog.length - 1; j >= 0; j--){
-          if(state.setLog[j].winner === i){
-            state.setLog.splice(j, 1);
-            break;
-          }
-        }
       }
       render();
     });
