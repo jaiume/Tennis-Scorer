@@ -16,37 +16,54 @@
   .wrap{
     max-width:760px;margin:auto;
     height:100svh;max-height:100svh;
-    padding:8px 10px 10px;
-    display:flex;flex-direction:column;gap:8px;
+    padding:6px 8px 8px;
+    display:flex;flex-direction:column;gap:6px;
   }
-  h1{text-align:center;margin:0;font-size:22px;line-height:1.1;flex:0 0 auto}
-  .players{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1 1 auto;min-height:0}
+  h1{text-align:center;margin:0;font-size:20px;line-height:1.1;flex:0 0 auto}
+  .players{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1 1 auto;min-height:0}
   .card{
-    background:#1b241e;border:1px solid #3b4f40;border-radius:12px;padding:8px;
+    background:#1b241e;border:1px solid #3b4f40;border-radius:12px;padding:6px;
     display:flex;flex-direction:column;min-height:0;
   }
   input{
-    width:100%;padding:8px;border-radius:8px;border:1px solid #4d6553;
-    background:#111713;color:#fff;font-size:15px;font-weight:700;text-align:center;
-    margin:0 0 6px;flex:0 0 auto;
+    width:100%;padding:7px;border-radius:8px;border:1px solid #4d6553;
+    background:#111713;color:#fff;font-size:14px;font-weight:700;text-align:center;
+    margin:0 0 4px;flex:0 0 auto;
   }
-  .rows{display:flex;flex-direction:column;gap:6px;flex:1 1 auto;min-height:0}
+  .rows{display:flex;flex-direction:column;gap:4px;flex:1 1 auto;min-height:0}
   .row{
-    display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;
+    display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px;
     flex:1 1 auto;min-height:0;
   }
-  .label{font-size:11px;color:#c2cec4;line-height:1.1}
-  .score{font-size:clamp(22px,5.5vh,34px);font-weight:900;line-height:1}
-  .btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:92px}
-  button{border:0;border-radius:10px;padding:10px;font-size:15px;font-weight:800;touch-action:manipulation}
+  .label{font-size:10px;color:#c2cec4;line-height:1.1}
+  .score{font-size:clamp(18px,4.8vh,30px);font-weight:900;line-height:1}
+  .btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;width:108px}
+  button{border:0;border-radius:8px;padding:10px;font-size:14px;font-weight:800;touch-action:manipulation}
   .btns button{
-    padding:0;min-width:0;min-height:42px;height:100%;
-    font-size:22px;line-height:1;
+    padding:0;min-width:0;min-height:38px;height:100%;
+    font-size:18px;line-height:1;
   }
   .p1{background:#b8ff3d;color:#132000}
   .p2{background:#69c6ff;color:#061a24}
+  .setsBox{
+    flex:0 0 auto;
+    background:#1b241e;border:1px solid #3b4f40;border-radius:10px;
+    padding:6px 8px;max-height:22svh;display:flex;flex-direction:column;min-height:0;
+  }
+  .setsTitle{font-size:11px;color:#c2cec4;margin:0 0 4px;flex:0 0 auto}
+  .setsList{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;flex:1 1 auto}
+  .setRow{
+    display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;
+    padding:5px 0;border-top:1px solid #2a372e;font-size:13px;font-weight:700;
+  }
+  .setRow:first-child{border-top:0}
+  .setRow button{
+    background:#2a372e;color:#fff;border:1px solid #48604f;
+    padding:4px 8px;font-size:12px;border-radius:8px;
+  }
+  .setsEmpty{color:#7f8f84;font-size:12px;padding:2px 0}
   .bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:0 0 auto}
-  .bottom button{background:#2a372e;color:#fff;border:1px solid #48604f;padding:11px 8px;font-size:14px}
+  .bottom button{background:#2a372e;color:#fff;border:1px solid #48604f;padding:10px 8px;font-size:13px}
   #shareBtn{background:#b8ff3d;color:#132000;border:0}
   #jsWarning{display:none;background:#6b2d2d;padding:8px;border-radius:8px;text-align:center;font-size:13px}
 </style>
@@ -64,6 +81,7 @@
           <div><div class="label">Score</div><div class="score" id="p0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 pointBtn" data-player="0" data-delta="-1">−</button>
+            <button type="button" class="p1 pointBtn" data-player="0" data-delta="0">0</button>
             <button type="button" class="p1 pointBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -71,6 +89,7 @@
           <div><div class="label">Games</div><div class="score" id="g0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 gameBtn" data-player="0" data-delta="-1">−</button>
+            <button type="button" class="p1 gameBtn" data-player="0" data-delta="0">0</button>
             <button type="button" class="p1 gameBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -78,6 +97,7 @@
           <div><div class="label">Sets</div><div class="score" id="s0">0</div></div>
           <div class="btns">
             <button type="button" class="p1 setBtn" data-player="0" data-delta="-1">−</button>
+            <button type="button" class="p1 setBtn" data-player="0" data-delta="0">0</button>
             <button type="button" class="p1 setBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
@@ -91,6 +111,7 @@
           <div><div class="label">Score</div><div class="score" id="p1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 pointBtn" data-player="1" data-delta="-1">−</button>
+            <button type="button" class="p2 pointBtn" data-player="1" data-delta="0">0</button>
             <button type="button" class="p2 pointBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
@@ -98,6 +119,7 @@
           <div><div class="label">Games</div><div class="score" id="g1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 gameBtn" data-player="1" data-delta="-1">−</button>
+            <button type="button" class="p2 gameBtn" data-player="1" data-delta="0">0</button>
             <button type="button" class="p2 gameBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
@@ -105,11 +127,17 @@
           <div><div class="label">Sets</div><div class="score" id="s1">0</div></div>
           <div class="btns">
             <button type="button" class="p2 setBtn" data-player="1" data-delta="-1">−</button>
+            <button type="button" class="p2 setBtn" data-player="1" data-delta="0">0</button>
             <button type="button" class="p2 setBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="setsBox">
+    <div class="setsTitle">Set results</div>
+    <div class="setsList" id="setsList"></div>
   </div>
 
   <div class="bottom">
@@ -122,14 +150,55 @@
 <script>
 (function(){
   const pointLabels = ["0","15","30","40","AD"];
-  let state = {points:[0,0],games:[0,0],sets:[0,0]};
+  let state = {points:[0,0],games:[0,0],sets:[0,0],setLog:[]};
   let history = [];
 
   document.getElementById("jsWarning").style.display = "none";
 
+  function snapshot(){
+    return JSON.stringify(state);
+  }
+
   function save(){
-    history.push(JSON.stringify(state));
+    history.push(snapshot());
     if(history.length > 100) history.shift();
+  }
+
+  function playerName(i){
+    const el = document.getElementById("n"+i);
+    return (el && el.value.trim()) || ("Player " + (i + 1));
+  }
+
+  function renderSetLog(){
+    const list = document.getElementById("setsList");
+    list.innerHTML = "";
+    if(!state.setLog.length){
+      const empty = document.createElement("div");
+      empty.className = "setsEmpty";
+      empty.textContent = "No sets recorded yet";
+      list.appendChild(empty);
+      return;
+    }
+    state.setLog.forEach(function(entry, index){
+      const row = document.createElement("div");
+      row.className = "setRow";
+      const text = document.createElement("div");
+      text.textContent = entry.winnerName + " " + entry.winnerGames + " - " + entry.loserGames;
+      const del = document.createElement("button");
+      del.type = "button";
+      del.textContent = "Delete";
+      del.addEventListener("click", function(){
+        save();
+        const removed = state.setLog.splice(index, 1)[0];
+        if(removed){
+          state.sets[removed.winner] = Math.max(0, state.sets[removed.winner] - 1);
+        }
+        render();
+      });
+      row.appendChild(text);
+      row.appendChild(del);
+      list.appendChild(row);
+    });
   }
 
   function render(){
@@ -138,6 +207,7 @@
       document.getElementById("g"+i).textContent = state.games[i];
       document.getElementById("s"+i).textContent = state.sets[i];
     }
+    renderSetLog();
   }
 
   function wrap(value, max){
@@ -149,7 +219,8 @@
       const i = Number(this.dataset.player);
       const delta = Number(this.dataset.delta);
       save();
-      state.points[i] = wrap(state.points[i] + delta, pointLabels.length);
+      if(delta === 0) state.points[i] = 0;
+      else state.points[i] = wrap(state.points[i] + delta, pointLabels.length);
       render();
     });
   });
@@ -159,8 +230,10 @@
       const i = Number(this.dataset.player);
       const delta = Number(this.dataset.delta);
       if(delta < 0 && state.games[i] <= 0) return;
+      if(delta === 0 && state.games[i] === 0) return;
       save();
-      state.games[i] = Math.max(0, state.games[i] + delta);
+      if(delta === 0) state.games[i] = 0;
+      else state.games[i] = Math.max(0, state.games[i] + delta);
       render();
     });
   });
@@ -169,9 +242,35 @@
     btn.addEventListener("click", function(){
       const i = Number(this.dataset.player);
       const delta = Number(this.dataset.delta);
+      const other = 1 - i;
+
       if(delta < 0 && state.sets[i] <= 0) return;
+      if(delta === 0 && state.sets[i] === 0) return;
+
       save();
-      state.sets[i] = Math.max(0, state.sets[i] + delta);
+
+      if(delta === 1){
+        state.setLog.push({
+          winner: i,
+          winnerName: playerName(i),
+          winnerGames: state.games[i],
+          loserGames: state.games[other]
+        });
+        state.sets[i]++;
+        state.games = [0, 0];
+        state.points = [0, 0];
+      } else if(delta === 0){
+        state.sets[i] = 0;
+        state.setLog = state.setLog.filter(function(entry){ return entry.winner !== i; });
+      } else {
+        state.sets[i] = Math.max(0, state.sets[i] - 1);
+        for(let j = state.setLog.length - 1; j >= 0; j--){
+          if(state.setLog[j].winner === i){
+            state.setLog.splice(j, 1);
+            break;
+          }
+        }
+      }
       render();
     });
   });
@@ -179,19 +278,15 @@
   document.getElementById("undoBtn").addEventListener("click", function(){
     if(!history.length) return;
     state = JSON.parse(history.pop());
+    if(!state.setLog) state.setLog = [];
     render();
   });
 
   document.getElementById("resetBtn").addEventListener("click", function(){
     save();
-    state = {points:[0,0],games:[0,0],sets:[0,0]};
+    state = {points:[0,0],games:[0,0],sets:[0,0],setLog:[]};
     render();
   });
-
-  function playerName(i){
-    const el = document.getElementById("n"+i);
-    return (el && el.value.trim()) || ("Player " + (i + 1));
-  }
 
   function roundRect(ctx, x, y, w, h, r){
     ctx.beginPath();
@@ -204,7 +299,11 @@
   }
 
   function buildScoreBlob(){
-    const W = 1080, H = 720, dpr = 2;
+    const logLines = state.setLog.map(function(entry){
+      return entry.winnerName + " " + entry.winnerGames + " - " + entry.loserGames;
+    });
+    const extra = Math.max(0, logLines.length - 3) * 36;
+    const W = 1080, H = 720 + extra, dpr = 2;
     const canvas = document.createElement("canvas");
     canvas.width = W * dpr;
     canvas.height = H * dpr;
@@ -221,7 +320,7 @@
 
     const names = [playerName(0), playerName(1)];
     const accents = ["#b8ff3d", "#69c6ff"];
-    const cardW = 460, cardH = 480, gap = 40;
+    const cardW = 460, cardH = 420, gap = 40;
     const startX = (W - (cardW * 2 + gap)) / 2;
     const startY = 120;
 
@@ -251,15 +350,30 @@
         ["Sets", String(state.sets[i])]
       ];
       rows.forEach(function(row, ri){
-        const ry = y + 150 + ri * 100;
+        const ry = y + 150 + ri * 85;
         ctx.fillStyle = "#c2cec4";
         ctx.font = "600 28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
         ctx.textAlign = "left";
         ctx.fillText(row[0], x + 40, ry);
         ctx.fillStyle = "#ffffff";
-        ctx.font = "900 64px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+        ctx.font = "900 56px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
         ctx.textAlign = "right";
-        ctx.fillText(row[1], x + cardW - 40, ry + 10);
+        ctx.fillText(row[1], x + cardW - 40, ry + 8);
+      });
+    }
+
+    if(logLines.length){
+      let y = startY + cardH + 50;
+      ctx.fillStyle = "#c2cec4";
+      ctx.font = "700 28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("Set results", startX, y);
+      y += 40;
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "600 28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      logLines.forEach(function(line){
+        ctx.fillText(line, startX, y);
+        y += 36;
       });
     }
 
