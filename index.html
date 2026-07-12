@@ -2,28 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Tennis Scorekeeper</title>
 <style>
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;background:#101512;color:#fff}
-  .wrap{max-width:760px;margin:auto;padding:18px}
-  h1{text-align:center}
-  .players{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .card{background:#1b241e;border:1px solid #3b4f40;border-radius:16px;padding:14px}
-  input{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #4d6553;background:#111713;color:#fff;font-size:18px;font-weight:700;text-align:center;margin-bottom:10px}
-  .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin:10px 0}
-  .label{font-size:14px;color:#c2cec4}
-  .score{font-size:34px;font-weight:900}
-  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:132px}
-  button{border:0;border-radius:12px;padding:15px;font-size:17px;font-weight:800;touch-action:manipulation}
-  .btns button{padding:15px 0;min-width:0}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#101512;color:#fff;
+    overflow:hidden;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{
+    max-width:760px;margin:auto;
+    height:100svh;max-height:100svh;
+    padding:8px 10px 10px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  h1{text-align:center;margin:0;font-size:22px;line-height:1.1;flex:0 0 auto}
+  .players{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1 1 auto;min-height:0}
+  .card{
+    background:#1b241e;border:1px solid #3b4f40;border-radius:12px;padding:8px;
+    display:flex;flex-direction:column;min-height:0;
+  }
+  input{
+    width:100%;padding:8px;border-radius:8px;border:1px solid #4d6553;
+    background:#111713;color:#fff;font-size:15px;font-weight:700;text-align:center;
+    margin:0 0 6px;flex:0 0 auto;
+  }
+  .rows{display:flex;flex-direction:column;gap:6px;flex:1 1 auto;min-height:0}
+  .row{
+    display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;
+    flex:1 1 auto;min-height:0;
+  }
+  .label{font-size:11px;color:#c2cec4;line-height:1.1}
+  .score{font-size:clamp(22px,5.5vh,34px);font-weight:900;line-height:1}
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:92px}
+  button{border:0;border-radius:10px;padding:10px;font-size:15px;font-weight:800;touch-action:manipulation}
+  .btns button{
+    padding:0;min-width:0;min-height:42px;height:100%;
+    font-size:22px;line-height:1;
+  }
   .p1{background:#b8ff3d;color:#132000}
   .p2{background:#69c6ff;color:#061a24}
-  .bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:15px}
-  .bottom button{background:#2a372e;color:#fff;border:1px solid #48604f}
+  .bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:0 0 auto}
+  .bottom button{background:#2a372e;color:#fff;border:1px solid #48604f;padding:11px 8px;font-size:14px}
   #shareBtn{background:#b8ff3d;color:#132000;border:0}
-  #jsWarning{background:#6b2d2d;padding:12px;border-radius:10px;text-align:center;margin-bottom:12px}
-  @media(max-width:560px){.players{grid-template-columns:1fr}}
+  #jsWarning{display:none;background:#6b2d2d;padding:8px;border-radius:8px;text-align:center;font-size:13px}
 </style>
 </head>
 <body>
@@ -34,50 +59,54 @@
   <div class="players">
     <div class="card">
       <input id="n0" value="Player 1">
-      <div class="row">
-        <div><div class="label">In-game score</div><div class="score" id="p0">0</div></div>
-        <div class="btns">
-          <button type="button" class="p1 pointBtn" data-player="0" data-delta="-1">−</button>
-          <button type="button" class="p1 pointBtn" data-player="0" data-delta="1">+</button>
+      <div class="rows">
+        <div class="row">
+          <div><div class="label">Score</div><div class="score" id="p0">0</div></div>
+          <div class="btns">
+            <button type="button" class="p1 pointBtn" data-player="0" data-delta="-1">−</button>
+            <button type="button" class="p1 pointBtn" data-player="0" data-delta="1">+</button>
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div><div class="label">Games</div><div class="score" id="g0">0</div></div>
-        <div class="btns">
-          <button type="button" class="p1 gameBtn" data-player="0" data-delta="-1">−</button>
-          <button type="button" class="p1 gameBtn" data-player="0" data-delta="1">+</button>
+        <div class="row">
+          <div><div class="label">Games</div><div class="score" id="g0">0</div></div>
+          <div class="btns">
+            <button type="button" class="p1 gameBtn" data-player="0" data-delta="-1">−</button>
+            <button type="button" class="p1 gameBtn" data-player="0" data-delta="1">+</button>
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div><div class="label">Sets</div><div class="score" id="s0">0</div></div>
-        <div class="btns">
-          <button type="button" class="p1 setBtn" data-player="0" data-delta="-1">−</button>
-          <button type="button" class="p1 setBtn" data-player="0" data-delta="1">+</button>
+        <div class="row">
+          <div><div class="label">Sets</div><div class="score" id="s0">0</div></div>
+          <div class="btns">
+            <button type="button" class="p1 setBtn" data-player="0" data-delta="-1">−</button>
+            <button type="button" class="p1 setBtn" data-player="0" data-delta="1">+</button>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="card">
       <input id="n1" value="Player 2">
-      <div class="row">
-        <div><div class="label">In-game score</div><div class="score" id="p1">0</div></div>
-        <div class="btns">
-          <button type="button" class="p2 pointBtn" data-player="1" data-delta="-1">−</button>
-          <button type="button" class="p2 pointBtn" data-player="1" data-delta="1">+</button>
+      <div class="rows">
+        <div class="row">
+          <div><div class="label">Score</div><div class="score" id="p1">0</div></div>
+          <div class="btns">
+            <button type="button" class="p2 pointBtn" data-player="1" data-delta="-1">−</button>
+            <button type="button" class="p2 pointBtn" data-player="1" data-delta="1">+</button>
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div><div class="label">Games</div><div class="score" id="g1">0</div></div>
-        <div class="btns">
-          <button type="button" class="p2 gameBtn" data-player="1" data-delta="-1">−</button>
-          <button type="button" class="p2 gameBtn" data-player="1" data-delta="1">+</button>
+        <div class="row">
+          <div><div class="label">Games</div><div class="score" id="g1">0</div></div>
+          <div class="btns">
+            <button type="button" class="p2 gameBtn" data-player="1" data-delta="-1">−</button>
+            <button type="button" class="p2 gameBtn" data-player="1" data-delta="1">+</button>
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div><div class="label">Sets</div><div class="score" id="s1">0</div></div>
-        <div class="btns">
-          <button type="button" class="p2 setBtn" data-player="1" data-delta="-1">−</button>
-          <button type="button" class="p2 setBtn" data-player="1" data-delta="1">+</button>
+        <div class="row">
+          <div><div class="label">Sets</div><div class="score" id="s1">0</div></div>
+          <div class="btns">
+            <button type="button" class="p2 setBtn" data-player="1" data-delta="-1">−</button>
+            <button type="button" class="p2 setBtn" data-player="1" data-delta="1">+</button>
+          </div>
         </div>
       </div>
     </div>
