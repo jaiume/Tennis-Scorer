@@ -51,8 +51,16 @@
   .setsBox{
     flex:0 0 auto;
     background:#1b241e;border:1px solid #3b4f40;border-radius:10px;
-    padding:6px 8px;max-height:22svh;display:flex;flex-direction:column;min-height:0;
+    padding:6px 8px;max-height:18svh;display:flex;flex-direction:column;min-height:0;
   }
+  .tbBox{
+    flex:0 0 auto;
+    background:#1b241e;border:1px solid #3b4f40;border-radius:10px;
+    padding:6px 8px;display:none;flex-direction:column;gap:4px;min-height:0;
+  }
+  .tbBox.show{display:flex}
+  .tbBox.active{border-color:#b8ff3d}
+  .tbGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
   .setsTitle{font-size:11px;color:#c2cec4;margin:0 0 4px;flex:0 0 auto}
   .setsList{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;flex:1 1 auto}
   .setRow{
@@ -213,6 +221,28 @@
     </div>
   </div>
 
+  <div class="tbBox" id="tbBox">
+    <div class="setsTitle" id="tbTitle">Tie break</div>
+    <div class="tbGrid">
+      <div class="row">
+        <div><div class="label" id="tbLabel0">P1</div><div class="score" id="tb0">0</div></div>
+        <div class="btns tbBtns">
+          <button type="button" class="p1 tbBtn" data-player="0" data-delta="-1">−</button>
+          <button type="button" class="p1 tbBtn zeroBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
+          <button type="button" class="p1 tbBtn" data-player="0" data-delta="1">+</button>
+        </div>
+      </div>
+      <div class="row">
+        <div><div class="label" id="tbLabel1">P2</div><div class="score" id="tb1">0</div></div>
+        <div class="btns tbBtns">
+          <button type="button" class="p2 tbBtn" data-player="1" data-delta="-1">−</button>
+          <button type="button" class="p2 tbBtn zeroBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
+          <button type="button" class="p2 tbBtn" data-player="1" data-delta="1">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="setsBox">
     <div class="setsTitle">Set results</div>
     <div class="setsList" id="setsList"></div>
@@ -290,7 +320,43 @@
         <label for="setWinBy">Win by</label>
         <input type="number" id="setWinBy" min="1" max="20" value="2" inputmode="numeric">
       </div>
-      <p class="settingHint">Used when auto increment is on. Play continues until First to and Win by are both met.</p>
+      <p class="settingHint">Used when auto increment is on. Play continues until First to and Win by are both met, unless a tie break starts.</p>
+    </div>
+
+    <div class="settingBlock">
+      <h3>Set tie break</h3>
+      <div class="scoringOptions">
+        <label class="scoringOption">
+          <input type="radio" name="tieBreakWhen" value="game-results">
+          <div>
+            <strong>Game results</strong>
+            <span>No tie break — finish sets with game win-by</span>
+          </div>
+        </label>
+        <label class="scoringOption">
+          <input type="radio" name="tieBreakWhen" value="every-set" checked>
+          <div>
+            <strong>Every set</strong>
+            <span>Tie break when games reach First to all</span>
+          </div>
+        </label>
+        <label class="scoringOption">
+          <input type="radio" name="tieBreakWhen" value="final-set">
+          <div>
+            <strong>Final set</strong>
+            <span>Tie break only when sets are tied (1–1, 2–2, …)</span>
+          </div>
+        </label>
+      </div>
+      <div class="inlineN">
+        <label for="tieBreakFirstTo">First to</label>
+        <input type="number" id="tieBreakFirstTo" min="1" max="99" value="7" inputmode="numeric">
+        <label for="tieBreakFirstTo">points</label>
+      </div>
+      <div class="inlineN">
+        <label for="tieBreakWinBy">Win by</label>
+        <input type="number" id="tieBreakWinBy" min="1" max="20" value="2" inputmode="numeric">
+      </div>
     </div>
 
     <div class="matchActions">
@@ -309,25 +375,37 @@
     integerN: 11,
     integerWinBy: 2,
     setFirstTo: 6,
-    setWinBy: 2
+    setWinBy: 2,
+    tieBreakWhen: "every-set",
+    tieBreakFirstTo: 7,
+    tieBreakWinBy: 2
   };
 
   let settings = loadSettings();
-  let state = {points:[0,0],games:[0,0],sets:[0,0],setLog:[]};
+  let state = emptyState();
   let history = [];
 
   document.getElementById("jsWarning").style.display = "none";
+
+  function emptyState(){
+    return {points:[0,0],games:[0,0],sets:[0,0],setLog:[],inTieBreak:false,tbPoints:[0,0]};
+  }
 
   function loadSettings(){
     try{
       const raw = localStorage.getItem(SETTINGS_KEY);
       if(!raw) return Object.assign({}, defaultSettings);
       const parsed = JSON.parse(raw);
+      const tieBreakWhen = ["game-results","every-set","final-set"].indexOf(parsed.tieBreakWhen) >= 0
+        ? parsed.tieBreakWhen : "every-set";
       return Object.assign({}, defaultSettings, parsed, {
         integerN: clampInt(parsed.integerN, 1, 99, 11),
         integerWinBy: clampInt(parsed.integerWinBy, 1, 20, 2),
         setFirstTo: clampInt(parsed.setFirstTo, 1, 99, 6),
         setWinBy: clampInt(parsed.setWinBy, 1, 20, 2),
+        tieBreakWhen: tieBreakWhen,
+        tieBreakFirstTo: clampInt(parsed.tieBreakFirstTo, 1, 99, 7),
+        tieBreakWinBy: clampInt(parsed.tieBreakWinBy, 1, 20, 2),
         scoringType: ["integer","tennis-simple","tennis-adult"].indexOf(parsed.scoringType) >= 0
           ? parsed.scoringType : "tennis-adult",
         autoIncrement: !!parsed.autoIncrement
@@ -387,6 +465,28 @@
     );
   }
 
+  function isFinalSet(){
+    return state.sets[0] === state.sets[1] && state.sets[0] > 0;
+  }
+
+  function shouldUseTieBreakThisSet(){
+    if(settings.tieBreakWhen === "game-results") return false;
+    if(settings.tieBreakWhen === "every-set") return true;
+    if(settings.tieBreakWhen === "final-set") return isFinalSet();
+    return false;
+  }
+
+  function enterTieBreak(){
+    state.inTieBreak = true;
+    state.tbPoints = [0, 0];
+    state.points = [0, 0];
+  }
+
+  function clearTieBreak(){
+    state.inTieBreak = false;
+    state.tbPoints = [0, 0];
+  }
+
   function awardSet(winner){
     const other = 1 - winner;
     state.setLog.push({
@@ -398,13 +498,45 @@
     state.sets[winner]++;
     state.games = [0, 0];
     state.points = [0, 0];
+    clearTieBreak();
+  }
+
+  function awardSetFromTieBreak(winner){
+    const loser = 1 - winner;
+    state.games[winner] = settings.setFirstTo + 1;
+    state.games[loser] = settings.setFirstTo;
+    awardSet(winner);
   }
 
   function awardGame(winner){
     state.games[winner]++;
     state.points = [0, 0];
-    if(settings.autoIncrement && hasWonSet(winner)){
+    if(!settings.autoIncrement) return;
+    if(
+      state.games[0] === state.games[1] &&
+      state.games[0] === settings.setFirstTo &&
+      shouldUseTieBreakThisSet()
+    ){
+      enterTieBreak();
+      return;
+    }
+    if(hasWonSet(winner)){
       awardSet(winner);
+    }
+  }
+
+  function hasWonTieBreak(winner){
+    const loser = 1 - winner;
+    return (
+      state.tbPoints[winner] >= settings.tieBreakFirstTo &&
+      (state.tbPoints[winner] - state.tbPoints[loser]) >= settings.tieBreakWinBy
+    );
+  }
+
+  function addTieBreakPointAuto(winner){
+    state.tbPoints[winner] += 1;
+    if(hasWonTieBreak(winner)){
+      awardSetFromTieBreak(winner);
     }
   }
 
@@ -505,13 +637,28 @@
     });
   }
 
+  function updateTieBreakPanel(){
+    const box = document.getElementById("tbBox");
+    const show = !settings.autoIncrement || state.inTieBreak;
+    box.classList.toggle("show", show);
+    box.classList.toggle("active", !!state.inTieBreak);
+    document.getElementById("tbTitle").textContent = state.inTieBreak ? "Tie break (live)" : "Tie break";
+    for(let i=0;i<2;i++){
+      document.getElementById("tbLabel"+i).textContent = playerName(i);
+      document.getElementById("tb"+i).textContent = state.tbPoints[i];
+    }
+  }
+
   function render(){
+    if(!state.tbPoints) state.tbPoints = [0, 0];
+    if(typeof state.inTieBreak !== "boolean") state.inTieBreak = false;
     for(let i=0;i<2;i++){
       document.getElementById("p"+i).textContent = pointLabel(state.points[i]);
       document.getElementById("g"+i).textContent = state.games[i];
       document.getElementById("s"+i).textContent = state.sets[i];
     }
     updateControlsLayout();
+    updateTieBreakPanel();
     renderSetLog();
   }
 
@@ -521,20 +668,29 @@
     document.getElementById("integerWinBy").value = settings.integerWinBy;
     document.getElementById("setFirstTo").value = settings.setFirstTo;
     document.getElementById("setWinBy").value = settings.setWinBy;
+    document.getElementById("tieBreakFirstTo").value = settings.tieBreakFirstTo;
+    document.getElementById("tieBreakWinBy").value = settings.tieBreakWinBy;
     document.querySelectorAll('input[name="scoringType"]').forEach(function(radio){
       radio.checked = radio.value === settings.scoringType;
+    });
+    document.querySelectorAll('input[name="tieBreakWhen"]').forEach(function(radio){
+      radio.checked = radio.value === settings.tieBreakWhen;
     });
   }
 
   function readMatchForm(){
     const scoringTypeEl = document.querySelector('input[name="scoringType"]:checked');
+    const tieBreakWhenEl = document.querySelector('input[name="tieBreakWhen"]:checked');
     return {
       autoIncrement: document.getElementById("autoIncrement").checked,
       scoringType: scoringTypeEl ? scoringTypeEl.value : "tennis-adult",
       integerN: clampInt(document.getElementById("integerN").value, 1, 99, 11),
       integerWinBy: clampInt(document.getElementById("integerWinBy").value, 1, 20, 2),
       setFirstTo: clampInt(document.getElementById("setFirstTo").value, 1, 99, 6),
-      setWinBy: clampInt(document.getElementById("setWinBy").value, 1, 20, 2)
+      setWinBy: clampInt(document.getElementById("setWinBy").value, 1, 20, 2),
+      tieBreakWhen: tieBreakWhenEl ? tieBreakWhenEl.value : "every-set",
+      tieBreakFirstTo: clampInt(document.getElementById("tieBreakFirstTo").value, 1, 99, 7),
+      tieBreakWinBy: clampInt(document.getElementById("tieBreakWinBy").value, 1, 20, 2)
     };
   }
 
@@ -554,14 +710,19 @@
     if(["integer","tennis-simple","tennis-adult"].indexOf(next.scoringType) < 0){
       next.scoringType = "tennis-adult";
     }
+    if(["game-results","every-set","final-set"].indexOf(next.tieBreakWhen) < 0){
+      next.tieBreakWhen = "every-set";
+    }
     document.getElementById("integerN").value = next.integerN;
     document.getElementById("integerWinBy").value = next.integerWinBy;
     document.getElementById("setFirstTo").value = next.setFirstTo;
     document.getElementById("setWinBy").value = next.setWinBy;
+    document.getElementById("tieBreakFirstTo").value = next.tieBreakFirstTo;
+    document.getElementById("tieBreakWinBy").value = next.tieBreakWinBy;
     save();
     settings = next;
     saveSettings();
-    state = {points:[0,0],games:[0,0],sets:[0,0],setLog:[]};
+    state = emptyState();
     closeMatchSetup();
     render();
   }
@@ -578,7 +739,11 @@
       const i = Number(this.dataset.player);
       const delta = Number(this.dataset.delta);
       save();
-      if(delta === 0){
+      if(settings.autoIncrement && state.inTieBreak){
+        if(delta === 0) state.tbPoints[i] = 0;
+        else if(delta > 0) addTieBreakPointAuto(i);
+        else state.tbPoints[i] = Math.max(0, state.tbPoints[i] - 1);
+      } else if(delta === 0){
         state.points[i] = 0;
       } else if(settings.autoIncrement){
         if(delta > 0) addPointAuto(i);
@@ -601,14 +766,11 @@
         state.games[i] = 0;
       } else if(delta < 0){
         state.games[i] = Math.max(0, state.games[i] - 1);
+        if(settings.autoIncrement && state.inTieBreak) clearTieBreak();
+      } else if(settings.autoIncrement){
+        awardGame(i);
       } else {
         state.games[i] += 1;
-        if(settings.autoIncrement){
-          state.points = [0, 0];
-          if(hasWonSet(i)){
-            awardSet(i);
-          }
-        }
       }
       render();
     });
@@ -642,10 +804,30 @@
     });
   });
 
+  document.querySelectorAll(".tbBtn").forEach(btn=>{
+    btn.addEventListener("click", function(){
+      const i = Number(this.dataset.player);
+      const delta = Number(this.dataset.delta);
+      save();
+      if(delta === 0){
+        state.tbPoints[i] = 0;
+      } else if(settings.autoIncrement){
+        if(!state.inTieBreak) return;
+        if(delta > 0) addTieBreakPointAuto(i);
+        else state.tbPoints[i] = Math.max(0, state.tbPoints[i] - 1);
+      } else {
+        state.tbPoints[i] = Math.max(0, state.tbPoints[i] + delta);
+      }
+      render();
+    });
+  });
+
   document.getElementById("undoBtn").addEventListener("click", function(){
     if(!history.length) return;
     state = JSON.parse(history.pop());
     if(!state.setLog) state.setLog = [];
+    if(!state.tbPoints) state.tbPoints = [0, 0];
+    if(typeof state.inTieBreak !== "boolean") state.inTieBreak = false;
     render();
   });
 
