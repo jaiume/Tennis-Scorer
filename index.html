@@ -1282,6 +1282,22 @@
     render();
   }
 
+  function currentPointLabels(s) {
+    if (s.phase === PHASE.SET_TIEBREAK || s.phase === PHASE.MATCH_TIEBREAK) {
+      return [String(s.points[0]), String(s.points[1])];
+    }
+    return displayPointLabels(s.points, s.config.game);
+  }
+
+  /** Share caption with sets / games / score for each side. */
+  function buildShareText(names, s) {
+    var labels = currentPointLabels(s);
+    function line(i) {
+      return names[i] + " — Sets " + s.sets[i] + " · Games " + s.games[i] + " · Score " + labels[i];
+    }
+    return line(0) + "\n" + line(1);
+  }
+
   async function shareScore() {
     var canvas = document.createElement("canvas");
     canvas.width = 720;
@@ -1300,9 +1316,7 @@
     ctx.fillText(statusText(), 360, 100);
 
     var n0 = playerName(0), n1 = playerName(1);
-    var labels = (state.phase === PHASE.SET_TIEBREAK || state.phase === PHASE.MATCH_TIEBREAK)
-      ? [String(state.points[0]), String(state.points[1])]
-      : displayPointLabels(state.points, state.config.game);
+    var labels = currentPointLabels(state);
 
     function drawPlayer(x, name, color, pts, g, s) {
       ctx.fillStyle = "#1b241e";
@@ -1351,7 +1365,7 @@
 
     var blob = await new Promise(function (res) { canvas.toBlob(res, "image/png"); });
     var file = new File([blob], "tennis-score.png", { type: "image/png" });
-    var text = n0 + " " + state.sets[0] + "–" + state.sets[1] + " " + n1;
+    var text = buildShareText([n0, n1], state);
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], title: "Tennis Score", text: text });
     } else if (navigator.share) {
@@ -1696,6 +1710,19 @@
       var h = [];
       for (var i = 0; i < 4; i++) awardPoint(s, 0, h);
       assert(s.games[0] === 1, "numeric 4-0 wins");
+    }));
+
+    results.push(runScenario("share text includes sets/games/score per side", function () {
+      var s = makeState({
+        config: { auto: true, game: { type: "advantage" } },
+        sets: [1, 0],
+        games: [4, 3],
+        points: [2, 3]
+      });
+      var text = buildShareText(["Alice", "Bob"], s);
+      assert(text.indexOf("Alice — Sets 1 · Games 4 · Score 30") === 0, "side A line");
+      assert(text.indexOf("Bob — Sets 0 · Games 3 · Score 40") !== -1, "side B line");
+      assert(text.split("\n").length === 2, "two lines");
     }));
 
     results.push(runScenario("maybe enter MTB when sets 1-1", function () {
