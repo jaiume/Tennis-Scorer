@@ -19,16 +19,7 @@
     padding:6px 8px 8px;
     display:flex;flex-direction:column;gap:6px;
   }
-  .top{
-    display:grid;grid-template-columns:40px 1fr 40px;align-items:center;
-    flex:0 0 auto;
-  }
-  h1{text-align:center;margin:0;font-size:20px;line-height:1.1}
-  #settingsBtn{
-    width:40px;height:40px;border-radius:10px;padding:0;
-    background:#2a372e;color:#fff;border:1px solid #48604f;
-    font-size:20px;line-height:1;
-  }
+  h1{text-align:center;margin:0;font-size:20px;line-height:1.1;flex:0 0 auto}
   .players{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1 1 auto;min-height:0}
   .card{
     background:#1b241e;border:1px solid #3b4f40;border-radius:12px;padding:6px;
@@ -95,9 +86,21 @@
     margin-bottom:12px;
   }
   .settingsHead h2{margin:0;font-size:20px}
-  #settingsClose{
+  #matchClose{
     background:#2a372e;color:#fff;border:1px solid #48604f;
     width:36px;height:36px;border-radius:10px;padding:0;font-size:18px;
+  }
+  .matchActions{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;
+  }
+  .matchActions button{
+    padding:14px 10px;font-size:15px;border-radius:12px;
+  }
+  #matchCancel{
+    background:#2a372e;color:#fff;border:1px solid #48604f;
+  }
+  #matchStart{
+    background:#b8ff3d;color:#132000;
   }
   .settingBlock{
     background:#1b241e;border:1px solid #3b4f40;border-radius:12px;
@@ -145,11 +148,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="top">
-    <div></div>
-    <h1>🎾 Tennis Score</h1>
-    <button type="button" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
-  </div>
+  <h1>🎾 Tennis Score</h1>
   <div id="jsWarning">JavaScript has not started. Open this file in Safari or Chrome.</div>
 
   <div class="players">
@@ -226,11 +225,11 @@
   </div>
 </div>
 
-<div class="settingsOverlay" id="settingsOverlay" aria-hidden="true">
-  <div class="settingsPanel" role="dialog" aria-labelledby="settingsTitle">
+<div class="settingsOverlay" id="matchOverlay" aria-hidden="true">
+  <div class="settingsPanel" role="dialog" aria-labelledby="matchTitle">
     <div class="settingsHead">
-      <h2 id="settingsTitle">Settings</h2>
-      <button type="button" id="settingsClose" aria-label="Close">✕</button>
+      <h2 id="matchTitle">New match</h2>
+      <button type="button" id="matchClose" aria-label="Close">✕</button>
     </div>
 
     <div class="settingBlock">
@@ -284,6 +283,11 @@
         <label for="setFirstTo">games</label>
       </div>
       <p class="settingHint">Used when auto increment is on.</p>
+    </div>
+
+    <div class="matchActions">
+      <button type="button" id="matchCancel">Cancel</button>
+      <button type="button" id="matchStart">Start match</button>
     </div>
   </div>
 </div>
@@ -487,7 +491,7 @@
     renderSetLog();
   }
 
-  function syncSettingsForm(){
+  function syncMatchForm(){
     document.getElementById("autoIncrement").checked = settings.autoIncrement;
     document.getElementById("integerN").value = settings.integerN;
     document.getElementById("setFirstTo").value = settings.setFirstTo;
@@ -496,61 +500,47 @@
     });
   }
 
-  function openSettings(){
-    syncSettingsForm();
-    document.getElementById("settingsOverlay").classList.add("open");
-    document.getElementById("settingsOverlay").setAttribute("aria-hidden", "false");
+  function readMatchForm(){
+    const scoringTypeEl = document.querySelector('input[name="scoringType"]:checked');
+    return {
+      autoIncrement: document.getElementById("autoIncrement").checked,
+      scoringType: scoringTypeEl ? scoringTypeEl.value : "tennis-adult",
+      integerN: clampInt(document.getElementById("integerN").value, 1, 99, 11),
+      setFirstTo: clampInt(document.getElementById("setFirstTo").value, 1, 99, 6)
+    };
   }
 
-  function closeSettings(){
-    document.getElementById("settingsOverlay").classList.remove("open");
-    document.getElementById("settingsOverlay").setAttribute("aria-hidden", "true");
+  function openMatchSetup(){
+    syncMatchForm();
+    document.getElementById("matchOverlay").classList.add("open");
+    document.getElementById("matchOverlay").setAttribute("aria-hidden", "false");
   }
 
-  document.getElementById("settingsBtn").addEventListener("click", openSettings);
-  document.getElementById("settingsClose").addEventListener("click", closeSettings);
-  document.getElementById("settingsOverlay").addEventListener("click", function(e){
-    if(e.target === this) closeSettings();
-  });
+  function closeMatchSetup(){
+    document.getElementById("matchOverlay").classList.remove("open");
+    document.getElementById("matchOverlay").setAttribute("aria-hidden", "true");
+  }
 
-  document.getElementById("autoIncrement").addEventListener("change", function(){
-    settings.autoIncrement = this.checked;
-    saveSettings();
-    updateControlsLayout();
-  });
-
-  document.querySelectorAll('input[name="scoringType"]').forEach(function(radio){
-    radio.addEventListener("change", function(){
-      if(!this.checked) return;
-      const prev = settings.scoringType;
-      settings.scoringType = this.value;
-      saveSettings();
-      if(prev !== settings.scoringType){
-        save();
-        state.points = [0, 0];
-        render();
-      }
-    });
-  });
-
-  document.getElementById("integerN").addEventListener("change", function(){
-    settings.integerN = clampInt(this.value, 1, 99, 11);
-    this.value = settings.integerN;
-    saveSettings();
-    if(settings.scoringType === "integer"){
-      save();
-      state.points = [
-        Math.min(state.points[0], settings.integerN - 1),
-        Math.min(state.points[1], settings.integerN - 1)
-      ];
-      render();
+  function startMatchFromForm(){
+    const next = readMatchForm();
+    if(["integer","tennis-simple","tennis-adult"].indexOf(next.scoringType) < 0){
+      next.scoringType = "tennis-adult";
     }
-  });
-
-  document.getElementById("setFirstTo").addEventListener("change", function(){
-    settings.setFirstTo = clampInt(this.value, 1, 99, 6);
-    this.value = settings.setFirstTo;
+    document.getElementById("integerN").value = next.integerN;
+    document.getElementById("setFirstTo").value = next.setFirstTo;
+    save();
+    settings = next;
     saveSettings();
+    state = {points:[0,0],games:[0,0],sets:[0,0],setLog:[]};
+    closeMatchSetup();
+    render();
+  }
+
+  document.getElementById("matchClose").addEventListener("click", closeMatchSetup);
+  document.getElementById("matchCancel").addEventListener("click", closeMatchSetup);
+  document.getElementById("matchStart").addEventListener("click", startMatchFromForm);
+  document.getElementById("matchOverlay").addEventListener("click", function(e){
+    if(e.target === this) closeMatchSetup();
   });
 
   document.querySelectorAll(".pointBtn").forEach(btn=>{
@@ -629,11 +619,7 @@
     render();
   });
 
-  document.getElementById("resetBtn").addEventListener("click", function(){
-    save();
-    state = {points:[0,0],games:[0,0],sets:[0,0],setLog:[]};
-    render();
-  });
+  document.getElementById("resetBtn").addEventListener("click", openMatchSetup);
 
   function roundRect(ctx, x, y, w, h, r){
     ctx.beginPath();
@@ -764,7 +750,6 @@
     }
   });
 
-  syncSettingsForm();
   render();
 })();
 </script>
