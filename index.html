@@ -1325,12 +1325,12 @@
       ctx.fillStyle = color;
       ctx.font = "bold 28px sans-serif";
       ctx.fillText(name, x + 150, 190);
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 56px sans-serif";
-      ctx.fillText(pts, x + 150, 270);
       ctx.font = "22px sans-serif";
       ctx.fillStyle = "#c2cec4";
-      ctx.fillText("Games " + g + "  Sets " + s, x + 150, 330);
+      ctx.fillText("Sets " + s + "  Games " + g, x + 150, 240);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 56px sans-serif";
+      ctx.fillText(pts, x + 150, 320);
     }
 
     drawPlayer(40, n0, "#b8ff3d", labels[0], state.games[0], state.sets[0]);
