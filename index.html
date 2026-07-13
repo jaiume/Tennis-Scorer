@@ -26,6 +26,12 @@
     padding:5px 8px;min-height:28px;
   }
   .statusBar.complete{color:#69c6ff}
+  .endsBanner{
+    display:none;flex:0 0 auto;text-align:center;
+    background:#2a372e;border:1px solid #b8ff3d;border-radius:10px;
+    color:#b8ff3d;font-size:14px;font-weight:800;padding:8px 10px;
+  }
+  .endsBanner.show{display:block}
   .players{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1 1 auto;min-height:0}
   .card{
     background:#1b241e;border:1px solid #3b4f40;border-radius:12px;padding:6px;
@@ -163,6 +169,7 @@
   <h1>🎾 Tennis Score</h1>
   <div id="jsWarning">JavaScript has not started. Open this file in Safari or Chrome.</div>
   <div class="statusBar" id="statusBar">Ready</div>
+  <div class="endsBanner" id="endsBanner" role="status">Change ends</div>
 
   <div class="players">
     <div class="card" id="card0">
@@ -456,8 +463,21 @@
       server: 0,
       tbPointIndex: 0,
       tbFirstServer: 0,
+      changeEndsPending: false,
       config: clone(cfg)
     };
+  }
+
+  /** ITF-style: change ends after odd games in a set, and every 6 tie-break points. */
+  function shouldChangeEndsAfterGames(state) {
+    if (!state.config.courtEnds) return false;
+    var total = state.games[0] + state.games[1];
+    return total > 0 && total % 2 === 1;
+  }
+
+  function shouldChangeEndsAfterTbPoints(state) {
+    if (!state.config.courtEnds) return false;
+    return state.tbPointIndex > 0 && state.tbPointIndex % 6 === 0;
   }
 
   function isDecidingSet(state) {
@@ -652,6 +672,7 @@
   function awardGameWin(state, winner) {
     state.games[winner]++;
     state.points = [0, 0];
+    state.changeEndsPending = shouldChangeEndsAfterGames(state);
     var setCfg = activeSetConfig(state);
     var result = evaluateSet(state.games, setCfg);
     if (result.action === "START_TIEBREAK") {
@@ -676,10 +697,13 @@
       return state;
     }
     if (history) pushHistory(history, state);
+    /* Clear previous ends cue once play continues, then re-set if this action triggers one */
+    state.changeEndsPending = false;
 
     if (state.phase === PHASE.MATCH_TIEBREAK) {
       state.points[player]++;
       state.tbPointIndex++;
+      state.changeEndsPending = shouldChangeEndsAfterTbPoints(state);
       var mtb = evaluateTiebreak(state.points, matchTiebreakConfig(state));
       if (mtb.won) {
         completeSet(state, mtb.winner, { matchTiebreak: true });
@@ -690,6 +714,7 @@
     if (state.phase === PHASE.SET_TIEBREAK) {
       state.points[player]++;
       state.tbPointIndex++;
+      state.changeEndsPending = shouldChangeEndsAfterTbPoints(state);
       var setCfg = activeSetConfig(state);
       var tb = evaluateTiebreak(state.points, setCfg.tiebreak);
       if (tb.won) {
@@ -880,6 +905,11 @@
     var status = $("statusBar");
     status.textContent = statusText();
     status.classList.toggle("complete", state.phase === PHASE.COMPLETE);
+
+    var endsBanner = $("endsBanner");
+    var showEnds = !!state.config.courtEnds && !!state.changeEndsPending && state.phase !== PHASE.COMPLETE;
+    endsBanner.classList.toggle("show", showEnds);
+    endsBanner.textContent = "Change ends";
 
     /* Serving highlight */
     var srv = currentServer(state);
