@@ -20,11 +20,18 @@
     display:flex;flex-direction:column;gap:6px;
   }
   h1{text-align:center;margin:0;font-size:20px;line-height:1.1;flex:0 0 auto}
+  .statusBar{
+    flex:0 0 auto;text-align:center;font-size:12px;font-weight:700;
+    color:#b8ff3d;background:#1b241e;border:1px solid #3b4f40;border-radius:8px;
+    padding:5px 8px;min-height:28px;
+  }
+  .statusBar.complete{color:#69c6ff}
   .players{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1 1 auto;min-height:0}
   .card{
     background:#1b241e;border:1px solid #3b4f40;border-radius:12px;padding:6px;
-    display:flex;flex-direction:column;min-height:0;
+    display:flex;flex-direction:column;min-height:0;transition:border-color .15s,box-shadow .15s;
   }
+  .card.serving{border-color:#b8ff3d;box-shadow:0 0 0 1px #b8ff3d}
   input,select{
     width:100%;padding:7px;border-radius:8px;border:1px solid #4d6553;
     background:#111713;color:#fff;font-size:14px;font-weight:700;text-align:center;
@@ -41,6 +48,7 @@
   .btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;width:108px}
   .btns.auto{grid-template-columns:1fr 1fr;width:76px}
   .btns.auto .zeroBtn{display:none}
+  .hideManual{display:none!important}
   button{border:0;border-radius:8px;padding:10px;font-size:14px;font-weight:800;touch-action:manipulation}
   .btns button{
     padding:0;min-width:0;min-height:38px;height:100%;
@@ -51,7 +59,7 @@
   .setsBox{
     flex:0 0 auto;
     background:#1b241e;border:1px solid #3b4f40;border-radius:10px;
-    padding:6px 8px;max-height:18svh;display:flex;flex-direction:column;min-height:0;
+    padding:6px 8px;max-height:16svh;display:flex;flex-direction:column;min-height:0;
   }
   .tbBox{
     flex:0 0 auto;
@@ -68,13 +76,10 @@
     padding:5px 0;border-top:1px solid #2a372e;font-size:13px;font-weight:700;
   }
   .setRow:first-child{border-top:0}
-  .setRow button{
-    background:#2a372e;color:#fff;border:1px solid #48604f;
-    padding:4px 8px;font-size:12px;border-radius:8px;
-  }
   .setsEmpty{color:#7f8f84;font-size:12px;padding:2px 0}
   .bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:0 0 auto}
-  .bottom button{background:#2a372e;color:#fff;border:1px solid #48604f;padding:10px 8px;font-size:13px}
+  .bottom2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:0 0 auto}
+  .bottom button,.bottom2 button{background:#2a372e;color:#fff;border:1px solid #48604f;padding:10px 8px;font-size:13px}
   #shareBtn{background:#b8ff3d;color:#132000;border:0}
   #jsWarning{display:none;background:#6b2d2d;padding:8px;border-radius:8px;text-align:center;font-size:13px}
 
@@ -101,15 +106,9 @@
   .matchActions{
     display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;
   }
-  .matchActions button{
-    padding:14px 10px;font-size:15px;border-radius:12px;
-  }
-  #matchCancel{
-    background:#2a372e;color:#fff;border:1px solid #48604f;
-  }
-  #matchStart{
-    background:#b8ff3d;color:#132000;
-  }
+  .matchActions button{padding:14px 10px;font-size:15px;border-radius:12px}
+  #matchCancel{background:#2a372e;color:#fff;border:1px solid #48604f}
+  #matchStart{background:#b8ff3d;color:#132000}
   .settingBlock{
     background:#1b241e;border:1px solid #3b4f40;border-radius:12px;
     padding:12px;margin-bottom:10px;
@@ -121,9 +120,15 @@
   }
   .settingRow label{font-size:15px;font-weight:700}
   .settingHint{font-size:12px;color:#7f8f84;margin:4px 0 0;line-height:1.35}
-  .switch{
-    position:relative;width:48px;height:28px;flex:0 0 auto;
+  .previewText{font-size:13px;color:#c2cec4;line-height:1.4;margin:0}
+  .validationMsg{color:#ff8a8a;font-size:12px;margin:6px 0 0;min-height:1.2em}
+  .presetGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .presetBtn{
+    background:#111713;color:#fff;border:1px solid #4d6553;
+    padding:10px 8px;font-size:13px;border-radius:10px;text-align:left;
   }
+  .presetBtn.active{border-color:#b8ff3d;background:#1f2a22}
+  .switch{position:relative;width:48px;height:28px;flex:0 0 auto}
   .switch input{opacity:0;width:0;height:0}
   .switch span{
     position:absolute;inset:0;background:#2a372e;border:1px solid #48604f;
@@ -142,13 +147,11 @@
   }
   .scoringOption strong{display:block;font-size:14px}
   .scoringOption span{display:block;font-size:12px;color:#7f8f84;margin-top:2px;font-weight:500}
-  .inlineN{
-    display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;
-  }
+  .inlineN{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
   .inlineN label{font-size:13px;color:#c2cec4;font-weight:600}
-  .inlineN input{
-    width:72px;text-align:center;font-size:15px;padding:8px;margin:0;
-  }
+  .inlineN input{width:72px;text-align:center;font-size:15px;padding:8px;margin:0}
+  .customFields{display:none;margin-top:8px}
+  .customFields.show{display:block}
   .settingsPanel input[type="number"]{-moz-appearance:textfield}
   .settingsPanel input[type="number"]::-webkit-outer-spin-button,
   .settingsPanel input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
@@ -158,30 +161,31 @@
 <div class="wrap">
   <h1>🎾 Tennis Score</h1>
   <div id="jsWarning">JavaScript has not started. Open this file in Safari or Chrome.</div>
+  <div class="statusBar" id="statusBar">Ready</div>
 
   <div class="players">
-    <div class="card">
+    <div class="card" id="card0">
       <input id="n0" value="Player 1">
       <div class="rows">
-        <div class="row">
-          <div><div class="label">Score</div><div class="score" id="p0">0</div></div>
-          <div class="btns">
+        <div class="row" id="pointRow0">
+          <div><div class="label" id="pointLabel0">Score</div><div class="score" id="p0">Love</div></div>
+          <div class="btns" id="pointBtns0">
             <button type="button" class="p1 pointBtn" data-player="0" data-delta="-1">−</button>
             <button type="button" class="p1 pointBtn zeroBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 pointBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
-        <div class="row">
+        <div class="row gameRow" id="gameRow0">
           <div><div class="label">Games</div><div class="score" id="g0">0</div></div>
-          <div class="btns">
+          <div class="btns" id="gameBtns0">
             <button type="button" class="p1 gameBtn" data-player="0" data-delta="-1">−</button>
             <button type="button" class="p1 gameBtn zeroBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 gameBtn" data-player="0" data-delta="1">+</button>
           </div>
         </div>
-        <div class="row">
+        <div class="row setRowControls" id="setRow0">
           <div><div class="label">Sets</div><div class="score" id="s0">0</div></div>
-          <div class="btns">
+          <div class="btns" id="setBtns0">
             <button type="button" class="p1 setBtn" data-player="0" data-delta="-1">−</button>
             <button type="button" class="p1 setBtn zeroBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p1 setBtn" data-player="0" data-delta="1">+</button>
@@ -190,28 +194,28 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="card1">
       <input id="n1" value="Player 2">
       <div class="rows">
-        <div class="row">
-          <div><div class="label">Score</div><div class="score" id="p1">0</div></div>
-          <div class="btns">
+        <div class="row" id="pointRow1">
+          <div><div class="label" id="pointLabel1">Score</div><div class="score" id="p1">Love</div></div>
+          <div class="btns" id="pointBtns1">
             <button type="button" class="p2 pointBtn" data-player="1" data-delta="-1">−</button>
             <button type="button" class="p2 pointBtn zeroBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 pointBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
-        <div class="row">
+        <div class="row gameRow" id="gameRow1">
           <div><div class="label">Games</div><div class="score" id="g1">0</div></div>
-          <div class="btns">
+          <div class="btns" id="gameBtns1">
             <button type="button" class="p2 gameBtn" data-player="1" data-delta="-1">−</button>
             <button type="button" class="p2 gameBtn zeroBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 gameBtn" data-player="1" data-delta="1">+</button>
           </div>
         </div>
-        <div class="row">
+        <div class="row setRowControls" id="setRow1">
           <div><div class="label">Sets</div><div class="score" id="s1">0</div></div>
-          <div class="btns">
+          <div class="btns" id="setBtns1">
             <button type="button" class="p2 setBtn" data-player="1" data-delta="-1">−</button>
             <button type="button" class="p2 setBtn zeroBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
             <button type="button" class="p2 setBtn" data-player="1" data-delta="1">+</button>
@@ -226,7 +230,7 @@
     <div class="tbGrid">
       <div class="row">
         <div><div class="label" id="tbLabel0">P1</div><div class="score" id="tb0">0</div></div>
-        <div class="btns tbBtns">
+        <div class="btns tbBtns" id="tbBtns0">
           <button type="button" class="p1 tbBtn" data-player="0" data-delta="-1">−</button>
           <button type="button" class="p1 tbBtn zeroBtn" data-player="0" data-delta="0" title="Zero" aria-label="Zero">∅</button>
           <button type="button" class="p1 tbBtn" data-player="0" data-delta="1">+</button>
@@ -234,7 +238,7 @@
       </div>
       <div class="row">
         <div><div class="label" id="tbLabel1">P2</div><div class="score" id="tb1">0</div></div>
-        <div class="btns tbBtns">
+        <div class="btns tbBtns" id="tbBtns1">
           <button type="button" class="p2 tbBtn" data-player="1" data-delta="-1">−</button>
           <button type="button" class="p2 tbBtn zeroBtn" data-player="1" data-delta="0" title="Zero" aria-label="Zero">∅</button>
           <button type="button" class="p2 tbBtn" data-player="1" data-delta="1">+</button>
@@ -251,7 +255,12 @@
   <div class="bottom">
     <button type="button" id="undoBtn">↩ Undo</button>
     <button type="button" id="shareBtn">Share</button>
-    <button type="button" id="resetBtn">New match</button>
+    <button type="button" id="newMatchBtn">New match</button>
+  </div>
+  <div class="bottom2">
+    <button type="button" id="resetGameBtn">Reset game</button>
+    <button type="button" id="resetSetBtn">Reset set</button>
+    <button type="button" id="resetMatchBtn">Reset match</button>
   </div>
 </div>
 
@@ -263,100 +272,120 @@
     </div>
 
     <div class="settingBlock">
+      <h3>Presets</h3>
+      <div class="presetGrid">
+        <button type="button" class="presetBtn" data-preset="standard">Standard Bo3</button>
+        <button type="button" class="presetBtn" data-preset="noAdMtb">No-Ad + MTB</button>
+        <button type="button" class="presetBtn" data-preset="advantage">Advantage set</button>
+        <button type="button" class="presetBtn" data-preset="fast4">Fast4-style</button>
+        <button type="button" class="presetBtn" data-preset="pro">Pro set</button>
+        <button type="button" class="presetBtn" data-preset="custom">Custom</button>
+      </div>
+    </div>
+
+    <div class="settingBlock">
       <h3>Auto increment</h3>
       <div class="settingRow">
-        <label for="autoIncrement">Increment games &amp; sets automatically</label>
+        <label for="autoIncrement">Automatic scoring engine</label>
         <label class="switch">
-          <input type="checkbox" id="autoIncrement">
+          <input type="checkbox" id="autoIncrement" checked>
           <span></span>
         </label>
       </div>
-      <p class="settingHint">When on, winning a game zeros the score and adds a game. Reaching the set target zeros games, adds a set, and records the set result.</p>
+      <p class="settingHint">When on, points advance games/sets automatically. When off, edit points, games, and sets independently.</p>
     </div>
 
     <div class="settingBlock">
-      <h3>Game scoring type</h3>
+      <h3>Match format</h3>
       <div class="scoringOptions">
-        <label class="scoringOption">
-          <input type="radio" name="scoringType" value="integer">
-          <div>
-            <strong>Integer</strong>
-            <span>1, 2, 3 … until first to &amp; win by</span>
-            <div class="inlineN">
-              <label for="integerN">First to</label>
-              <input type="number" id="integerN" min="1" max="99" value="11" inputmode="numeric">
-            </div>
-            <div class="inlineN">
-              <label for="integerWinBy">Win by</label>
-              <input type="number" id="integerWinBy" min="1" max="20" value="2" inputmode="numeric">
-            </div>
-          </div>
-        </label>
-        <label class="scoringOption">
-          <input type="radio" name="scoringType" value="tennis-simple">
-          <div>
-            <strong>Tennis simple</strong>
-            <span>Love, 15, 30, 40, game</span>
-          </div>
-        </label>
-        <label class="scoringOption">
-          <input type="radio" name="scoringType" value="tennis-adult" checked>
-          <div>
-            <strong>Tennis adult</strong>
-            <span>Love, 15, 30, 40, AD</span>
-          </div>
-        </label>
+        <label class="scoringOption"><input type="radio" name="matchFormat" value="1"><div><strong>One set</strong><span>First to win 1 set</span></div></label>
+        <label class="scoringOption"><input type="radio" name="matchFormat" value="2" checked><div><strong>Best of 3</strong><span>First to 2 sets</span></div></label>
+        <label class="scoringOption"><input type="radio" name="matchFormat" value="3"><div><strong>Best of 5</strong><span>First to 3 sets</span></div></label>
+        <label class="scoringOption"><input type="radio" name="matchFormat" value="custom"><div><strong>Custom</strong><span>Choose sets to win</span>
+          <div class="inlineN"><label for="customSetsToWin">Sets to win</label><input type="number" id="customSetsToWin" min="1" max="9" value="2" inputmode="numeric"></div>
+        </div></label>
       </div>
     </div>
 
     <div class="settingBlock">
-      <h3>Set winner</h3>
-      <div class="inlineN" style="margin-top:0">
-        <label for="setFirstTo">First to</label>
-        <input type="number" id="setFirstTo" min="1" max="99" value="6" inputmode="numeric">
-        <label for="setFirstTo">games</label>
-      </div>
-      <div class="inlineN">
-        <label for="setWinBy">Win by</label>
-        <input type="number" id="setWinBy" min="1" max="20" value="2" inputmode="numeric">
-      </div>
-      <p class="settingHint">Used when auto increment is on. Play continues until First to and Win by are both met, unless a tie break starts.</p>
-    </div>
-
-    <div class="settingBlock">
-      <h3>Set tie break</h3>
+      <h3>Game scoring</h3>
       <div class="scoringOptions">
-        <label class="scoringOption">
-          <input type="radio" name="tieBreakWhen" value="game-results">
-          <div>
-            <strong>Game results</strong>
-            <span>No tie break — finish sets with game win-by</span>
-          </div>
-        </label>
-        <label class="scoringOption">
-          <input type="radio" name="tieBreakWhen" value="every-set" checked>
-          <div>
-            <strong>Every set</strong>
-            <span>Tie break when games reach First to all</span>
-          </div>
-        </label>
-        <label class="scoringOption">
-          <input type="radio" name="tieBreakWhen" value="final-set">
-          <div>
-            <strong>Final set</strong>
-            <span>Tie break only when sets are tied (1–1, 2–2, …)</span>
-          </div>
-        </label>
+        <label class="scoringOption"><input type="radio" name="gameScoring" value="advantage" checked><div><strong>Standard — Advantage scoring</strong><span>Win by 2 from deuce</span></div></label>
+        <label class="scoringOption"><input type="radio" name="gameScoring" value="noAd"><div><strong>No-Ad — deciding point at Deuce</strong><span>4 points wins; DP at 3–3</span></div></label>
+        <label class="scoringOption"><input type="radio" name="gameScoring" value="numeric"><div><strong>Custom numeric</strong><span>Points to win + win by</span>
+          <div class="inlineN"><label for="numPointsToWin">Points to win</label><input type="number" id="numPointsToWin" min="1" max="99" value="4" inputmode="numeric"></div>
+          <div class="inlineN"><label for="numWinBy">Win by</label><input type="number" id="numWinBy" min="1" max="20" value="2" inputmode="numeric"></div>
+        </div></label>
       </div>
-      <div class="inlineN">
-        <label for="tieBreakFirstTo">First to</label>
-        <input type="number" id="tieBreakFirstTo" min="1" max="99" value="7" inputmode="numeric">
-        <label for="tieBreakFirstTo">points</label>
+    </div>
+
+    <div class="settingBlock">
+      <h3>Normal set</h3>
+      <div class="scoringOptions">
+        <label class="scoringOption"><input type="radio" name="normalSet" value="standardTb" checked><div><strong>Standard TB set</strong><span>First to 6, win by 2, TB at 6–6</span></div></label>
+        <label class="scoringOption"><input type="radio" name="normalSet" value="advantage"><div><strong>Advantage set</strong><span>First to 6, win by 2, no tiebreak</span></div></label>
+        <label class="scoringOption"><input type="radio" name="normalSet" value="short"><div><strong>Short set</strong><span>First to 4, win by 2, TB at 3–3</span></div></label>
+        <label class="scoringOption"><input type="radio" name="normalSet" value="pro"><div><strong>Pro set</strong><span>First to 8, win by 2, TB at 8–8</span></div></label>
+        <label class="scoringOption"><input type="radio" name="normalSet" value="custom"><div><strong>Custom</strong><span>Configure fields</span>
+          <div class="customFields" id="normalCustomFields">
+            <div class="inlineN"><label for="nsGamesToWin">Games to win</label><input type="number" id="nsGamesToWin" min="1" max="99" value="6" inputmode="numeric"></div>
+            <div class="inlineN"><label for="nsWinBy">Win by</label><input type="number" id="nsWinBy" min="1" max="20" value="2" inputmode="numeric"></div>
+            <div class="inlineN"><label for="nsTiebreakAt">TB at (blank = none)</label><input type="number" id="nsTiebreakAt" min="1" max="99" value="6" inputmode="numeric"></div>
+            <div class="inlineN"><label for="nsTbPts">TB points</label><input type="number" id="nsTbPts" min="1" max="99" value="7" inputmode="numeric"></div>
+            <div class="inlineN"><label for="nsTbWinBy">TB win by</label><input type="number" id="nsTbWinBy" min="1" max="20" value="2" inputmode="numeric"></div>
+          </div>
+        </div></label>
       </div>
-      <div class="inlineN">
-        <label for="tieBreakWinBy">Win by</label>
-        <input type="number" id="tieBreakWinBy" min="1" max="20" value="2" inputmode="numeric">
+    </div>
+
+    <div class="settingBlock" id="decidingBlock">
+      <h3>Deciding set</h3>
+      <div class="scoringOptions">
+        <label class="scoringOption"><input type="radio" name="decidingSet" value="sameAsNormal" checked><div><strong>Same as normal sets</strong></div></label>
+        <label class="scoringOption"><input type="radio" name="decidingSet" value="fullSet"><div><strong>Full set (custom rules)</strong>
+          <div class="customFields" id="decidingFullFields">
+            <div class="inlineN"><label for="dsGamesToWin">Games to win</label><input type="number" id="dsGamesToWin" min="1" max="99" value="6" inputmode="numeric"></div>
+            <div class="inlineN"><label for="dsWinBy">Win by</label><input type="number" id="dsWinBy" min="1" max="20" value="2" inputmode="numeric"></div>
+            <div class="inlineN"><label for="dsTiebreakAt">TB at (blank = none)</label><input type="number" id="dsTiebreakAt" min="1" max="99" value="" inputmode="numeric"></div>
+            <div class="inlineN"><label for="dsTbPts">TB points</label><input type="number" id="dsTbPts" min="1" max="99" value="7" inputmode="numeric"></div>
+            <div class="inlineN"><label for="dsTbWinBy">TB win by</label><input type="number" id="dsTbWinBy" min="1" max="20" value="2" inputmode="numeric"></div>
+          </div>
+        </div></label>
+        <label class="scoringOption"><input type="radio" name="decidingSet" value="mtb7"><div><strong>7-point match tiebreak</strong><span>Replaces deciding set</span></div></label>
+        <label class="scoringOption"><input type="radio" name="decidingSet" value="mtb10"><div><strong>10-point match tiebreak</strong><span>Replaces deciding set</span></div></label>
+        <label class="scoringOption"><input type="radio" name="decidingSet" value="mtbCustom"><div><strong>Custom match tiebreak</strong>
+          <div class="customFields" id="mtbCustomFields">
+            <div class="inlineN"><label for="mtbPts">Points to win</label><input type="number" id="mtbPts" min="1" max="99" value="10" inputmode="numeric"></div>
+            <div class="inlineN"><label for="mtbWinBy">Win by</label><input type="number" id="mtbWinBy" min="1" max="20" value="2" inputmode="numeric"></div>
+          </div>
+        </div></label>
       </div>
+    </div>
+
+    <div class="settingBlock">
+      <h3>Options</h3>
+      <div class="settingRow">
+        <label for="trackServer">Track server</label>
+        <label class="switch"><input type="checkbox" id="trackServer"><span></span></label>
+      </div>
+      <div class="settingRow">
+        <label for="courtEnds">Change ends</label>
+        <label class="switch"><input type="checkbox" id="courtEnds"><span></span></label>
+      </div>
+      <div class="settingRow">
+        <label for="noLet">No-let serves</label>
+        <label class="switch"><input type="checkbox" id="noLet"><span></span></label>
+      </div>
+      <div class="settingRow">
+        <label for="doubles">Doubles</label>
+        <label class="switch"><input type="checkbox" id="doubles"><span></span></label>
+      </div>
+    </div>
+
+    <div class="settingBlock">
+      <h3>Format preview</h3>
+      <p class="previewText" id="formatPreview">—</p>
+      <p class="validationMsg" id="validationMsg"></p>
     </div>
 
     <div class="matchActions">
@@ -367,602 +396,1304 @@
 </div>
 
 <script>
-(function(){
-  const SETTINGS_KEY = "tennis-scorekeeper-settings";
-  const defaultSettings = {
-    autoIncrement: false,
-    scoringType: "tennis-adult",
-    integerN: 11,
-    integerWinBy: 2,
-    setFirstTo: 6,
-    setWinBy: 2,
-    tieBreakWhen: "every-set",
-    tieBreakFirstTo: 7,
-    tieBreakWinBy: 2
+(function () {
+  "use strict";
+
+  /* ========== Scoring engine (DOM-independent) ========== */
+
+  var PHASE = {
+    GAME: "GAME",
+    SET_TIEBREAK: "SET_TIEBREAK",
+    MATCH_TIEBREAK: "MATCH_TIEBREAK",
+    COMPLETE: "COMPLETE"
   };
 
-  let settings = loadSettings();
-  let state = emptyState();
-  let history = [];
+  var STORAGE_KEY = "tennis-scorekeeper-v2";
+  var STORAGE_VERSION = 2;
 
-  document.getElementById("jsWarning").style.display = "none";
-
-  function emptyState(){
-    return {points:[0,0],games:[0,0],sets:[0,0],setLog:[],inTieBreak:false,tbPoints:[0,0]};
+  function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
   }
 
-  function loadSettings(){
-    try{
-      const raw = localStorage.getItem(SETTINGS_KEY);
-      if(!raw) return Object.assign({}, defaultSettings);
-      const parsed = JSON.parse(raw);
-      const tieBreakWhen = ["game-results","every-set","final-set"].indexOf(parsed.tieBreakWhen) >= 0
-        ? parsed.tieBreakWhen : "every-set";
-      return Object.assign({}, defaultSettings, parsed, {
-        integerN: clampInt(parsed.integerN, 1, 99, 11),
-        integerWinBy: clampInt(parsed.integerWinBy, 1, 20, 2),
-        setFirstTo: clampInt(parsed.setFirstTo, 1, 99, 6),
-        setWinBy: clampInt(parsed.setWinBy, 1, 20, 2),
-        tieBreakWhen: tieBreakWhen,
-        tieBreakFirstTo: clampInt(parsed.tieBreakFirstTo, 1, 99, 7),
-        tieBreakWinBy: clampInt(parsed.tieBreakWinBy, 1, 20, 2),
-        scoringType: ["integer","tennis-simple","tennis-adult"].indexOf(parsed.scoringType) >= 0
-          ? parsed.scoringType : "tennis-adult",
-        autoIncrement: !!parsed.autoIncrement
-      });
-    } catch(e){
-      return Object.assign({}, defaultSettings);
-    }
+  function defaultGameConfig() {
+    return { type: "advantage" };
   }
 
-  function saveSettings(){
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  }
-
-  function clampInt(value, min, max, fallback){
-    const n = Number(value);
-    if(!Number.isFinite(n)) return fallback;
-    return Math.max(min, Math.min(max, Math.round(n)));
-  }
-
-  function snapshot(){
-    return JSON.stringify(state);
-  }
-
-  function save(){
-    history.push(snapshot());
-    if(history.length > 100) history.shift();
-  }
-
-  function playerName(i){
-    const el = document.getElementById("n"+i);
-    return (el && el.value.trim()) || ("Player " + (i + 1));
-  }
-
-  function pointLabel(value){
-    if(settings.scoringType === "integer") return String(value);
-    if(settings.scoringType === "tennis-simple"){
-      return ["Love","15","30","40","Game"][value] || String(value);
-    }
-    return ["Love","15","30","40","AD"][value] || String(value);
-  }
-
-  function manualPointMax(){
-    if(settings.scoringType === "integer") return settings.integerN + 1;
-    if(settings.scoringType === "tennis-simple") return 5;
-    return 5;
-  }
-
-  function wrap(value, max){
-    return ((value % max) + max) % max;
-  }
-
-  function hasWonSet(winner){
-    const loser = 1 - winner;
-    return (
-      state.games[winner] >= settings.setFirstTo &&
-      (state.games[winner] - state.games[loser]) >= settings.setWinBy
-    );
-  }
-
-  function isFinalSet(){
-    return state.sets[0] === state.sets[1] && state.sets[0] > 0;
-  }
-
-  function shouldUseTieBreakThisSet(){
-    if(settings.tieBreakWhen === "game-results") return false;
-    if(settings.tieBreakWhen === "every-set") return true;
-    if(settings.tieBreakWhen === "final-set") return isFinalSet();
-    return false;
-  }
-
-  function enterTieBreak(){
-    state.inTieBreak = true;
-    state.tbPoints = [0, 0];
-    state.points = [0, 0];
-  }
-
-  function clearTieBreak(){
-    state.inTieBreak = false;
-    state.tbPoints = [0, 0];
-  }
-
-  function awardSet(winner){
-    const other = 1 - winner;
-    state.setLog.push({
-      winner: winner,
-      winnerName: playerName(winner),
-      winnerGames: state.games[winner],
-      loserGames: state.games[other]
-    });
-    state.sets[winner]++;
-    state.games = [0, 0];
-    state.points = [0, 0];
-    clearTieBreak();
-  }
-
-  function awardSetFromTieBreak(winner){
-    const loser = 1 - winner;
-    state.games[winner] = settings.setFirstTo + 1;
-    state.games[loser] = settings.setFirstTo;
-    awardSet(winner);
-  }
-
-  function awardGame(winner){
-    state.games[winner]++;
-    state.points = [0, 0];
-    if(!settings.autoIncrement) return;
-    if(
-      state.games[0] === state.games[1] &&
-      state.games[0] === settings.setFirstTo &&
-      shouldUseTieBreakThisSet()
-    ){
-      enterTieBreak();
-      return;
-    }
-    if(hasWonSet(winner)){
-      awardSet(winner);
-    }
-  }
-
-  function hasWonTieBreak(winner){
-    const loser = 1 - winner;
-    return (
-      state.tbPoints[winner] >= settings.tieBreakFirstTo &&
-      (state.tbPoints[winner] - state.tbPoints[loser]) >= settings.tieBreakWinBy
-    );
-  }
-
-  function addTieBreakPointAuto(winner){
-    state.tbPoints[winner] += 1;
-    if(hasWonTieBreak(winner)){
-      awardSetFromTieBreak(winner);
-    }
-  }
-
-  function applyAdultPoint(winner){
-    const loser = 1 - winner;
-    const w = state.points[winner];
-    const l = state.points[loser];
-
-    if(w < 3){
-      state.points[winner] = w + 1;
-      return;
-    }
-    if(w === 3){
-      if(l < 3){
-        awardGame(winner);
-      } else if(l === 3){
-        state.points[winner] = 4;
-      } else if(l === 4){
-        state.points[loser] = 3;
-      }
-      return;
-    }
-    if(w === 4){
-      awardGame(winner);
-    }
-  }
-
-  function applySimplePoint(winner){
-    if(state.points[winner] < 3){
-      state.points[winner] += 1;
-      return;
-    }
-    awardGame(winner);
-  }
-
-  function applyIntegerPoint(winner){
-    const loser = 1 - winner;
-    state.points[winner] += 1;
-    if(
-      state.points[winner] >= settings.integerN &&
-      (state.points[winner] - state.points[loser]) >= settings.integerWinBy
-    ){
-      awardGame(winner);
-    }
-  }
-
-  function addPointAuto(winner){
-    if(settings.scoringType === "integer") applyIntegerPoint(winner);
-    else if(settings.scoringType === "tennis-simple") applySimplePoint(winner);
-    else applyAdultPoint(winner);
-  }
-
-  function removePointAuto(player){
-    if(settings.scoringType === "integer"){
-      state.points[player] = Math.max(0, state.points[player] - 1);
-      return;
-    }
-    if(settings.scoringType === "tennis-simple"){
-      state.points[player] = Math.max(0, Math.min(3, state.points[player] - 1));
-      return;
-    }
-    // tennis-adult: simple step back
-    if(state.points[player] > 0) state.points[player] -= 1;
-  }
-
-  function renderSetLog(){
-    const list = document.getElementById("setsList");
-    list.innerHTML = "";
-    if(!state.setLog.length){
-      const empty = document.createElement("div");
-      empty.className = "setsEmpty";
-      empty.textContent = "No sets recorded yet";
-      list.appendChild(empty);
-      return;
-    }
-    state.setLog.forEach(function(entry, index){
-      const row = document.createElement("div");
-      row.className = "setRow";
-      const text = document.createElement("div");
-      text.textContent = entry.winnerName + " " + entry.winnerGames + " - " + entry.loserGames;
-      const del = document.createElement("button");
-      del.type = "button";
-      del.textContent = "Delete";
-      del.addEventListener("click", function(){
-        save();
-        state.setLog.splice(index, 1);
-        render();
-      });
-      row.appendChild(text);
-      row.appendChild(del);
-      list.appendChild(row);
-    });
-  }
-
-  function updateControlsLayout(){
-    document.querySelectorAll(".btns").forEach(function(group){
-      group.classList.toggle("auto", settings.autoIncrement);
-    });
-  }
-
-  function updateTieBreakPanel(){
-    const box = document.getElementById("tbBox");
-    const show = !settings.autoIncrement || state.inTieBreak;
-    box.classList.toggle("show", show);
-    box.classList.toggle("active", !!state.inTieBreak);
-    document.getElementById("tbTitle").textContent = state.inTieBreak ? "Tie break (live)" : "Tie break";
-    for(let i=0;i<2;i++){
-      document.getElementById("tbLabel"+i).textContent = playerName(i);
-      document.getElementById("tb"+i).textContent = state.tbPoints[i];
-    }
-  }
-
-  function render(){
-    if(!state.tbPoints) state.tbPoints = [0, 0];
-    if(typeof state.inTieBreak !== "boolean") state.inTieBreak = false;
-    for(let i=0;i<2;i++){
-      document.getElementById("p"+i).textContent = pointLabel(state.points[i]);
-      document.getElementById("g"+i).textContent = state.games[i];
-      document.getElementById("s"+i).textContent = state.sets[i];
-    }
-    updateControlsLayout();
-    updateTieBreakPanel();
-    renderSetLog();
-  }
-
-  function syncMatchForm(){
-    document.getElementById("autoIncrement").checked = settings.autoIncrement;
-    document.getElementById("integerN").value = settings.integerN;
-    document.getElementById("integerWinBy").value = settings.integerWinBy;
-    document.getElementById("setFirstTo").value = settings.setFirstTo;
-    document.getElementById("setWinBy").value = settings.setWinBy;
-    document.getElementById("tieBreakFirstTo").value = settings.tieBreakFirstTo;
-    document.getElementById("tieBreakWinBy").value = settings.tieBreakWinBy;
-    document.querySelectorAll('input[name="scoringType"]').forEach(function(radio){
-      radio.checked = radio.value === settings.scoringType;
-    });
-    document.querySelectorAll('input[name="tieBreakWhen"]').forEach(function(radio){
-      radio.checked = radio.value === settings.tieBreakWhen;
-    });
-  }
-
-  function readMatchForm(){
-    const scoringTypeEl = document.querySelector('input[name="scoringType"]:checked');
-    const tieBreakWhenEl = document.querySelector('input[name="tieBreakWhen"]:checked');
+  function defaultSetConfig() {
     return {
-      autoIncrement: document.getElementById("autoIncrement").checked,
-      scoringType: scoringTypeEl ? scoringTypeEl.value : "tennis-adult",
-      integerN: clampInt(document.getElementById("integerN").value, 1, 99, 11),
-      integerWinBy: clampInt(document.getElementById("integerWinBy").value, 1, 20, 2),
-      setFirstTo: clampInt(document.getElementById("setFirstTo").value, 1, 99, 6),
-      setWinBy: clampInt(document.getElementById("setWinBy").value, 1, 20, 2),
-      tieBreakWhen: tieBreakWhenEl ? tieBreakWhenEl.value : "every-set",
-      tieBreakFirstTo: clampInt(document.getElementById("tieBreakFirstTo").value, 1, 99, 7),
-      tieBreakWinBy: clampInt(document.getElementById("tieBreakWinBy").value, 1, 20, 2)
+      gamesToWin: 6,
+      winBy: 2,
+      tiebreakAt: 6,
+      tiebreak: { pointsToWin: 7, winBy: 2 }
     };
   }
 
-  function openMatchSetup(){
-    syncMatchForm();
-    document.getElementById("matchOverlay").classList.add("open");
-    document.getElementById("matchOverlay").setAttribute("aria-hidden", "false");
+  function defaultMatchConfig() {
+    return {
+      setsToWin: 2,
+      auto: true,
+      game: defaultGameConfig(),
+      set: defaultSetConfig(),
+      deciding: { type: "sameAsNormal" },
+      trackServer: false,
+      courtEnds: false,
+      noLet: false,
+      doubles: false,
+      names: ["Player 1", "Player 2"]
+    };
   }
 
-  function closeMatchSetup(){
-    document.getElementById("matchOverlay").classList.remove("open");
-    document.getElementById("matchOverlay").setAttribute("aria-hidden", "true");
+  function createInitialState(config) {
+    var cfg = config || defaultMatchConfig();
+    return {
+      phase: PHASE.GAME,
+      points: [0, 0],
+      games: [0, 0],
+      sets: [0, 0],
+      completedSets: [],
+      server: 0,
+      tbPointIndex: 0,
+      tbFirstServer: 0,
+      config: clone(cfg)
+    };
   }
 
-  function startMatchFromForm(){
-    const next = readMatchForm();
-    if(["integer","tennis-simple","tennis-adult"].indexOf(next.scoringType) < 0){
-      next.scoringType = "tennis-adult";
+  function isDecidingSet(state) {
+    var need = state.config.setsToWin;
+    return need > 1 && state.sets[0] === need - 1 && state.sets[1] === need - 1;
+  }
+
+  function activeSetConfig(state) {
+    if (isDecidingSet(state) && state.config.deciding.type === "fullSet") {
+      return state.config.deciding.set;
     }
-    if(["game-results","every-set","final-set"].indexOf(next.tieBreakWhen) < 0){
-      next.tieBreakWhen = "every-set";
-    }
-    document.getElementById("integerN").value = next.integerN;
-    document.getElementById("integerWinBy").value = next.integerWinBy;
-    document.getElementById("setFirstTo").value = next.setFirstTo;
-    document.getElementById("setWinBy").value = next.setWinBy;
-    document.getElementById("tieBreakFirstTo").value = next.tieBreakFirstTo;
-    document.getElementById("tieBreakWinBy").value = next.tieBreakWinBy;
-    save();
-    settings = next;
-    saveSettings();
-    state = emptyState();
-    closeMatchSetup();
-    render();
+    return state.config.set;
   }
 
-  document.getElementById("matchClose").addEventListener("click", closeMatchSetup);
-  document.getElementById("matchCancel").addEventListener("click", closeMatchSetup);
-  document.getElementById("matchStart").addEventListener("click", startMatchFromForm);
-  document.getElementById("matchOverlay").addEventListener("click", function(e){
-    if(e.target === this) closeMatchSetup();
-  });
+  function decidingIsMatchTiebreak(state) {
+    var t = state.config.deciding.type;
+    return t === "matchTiebreak" || t === "mtb7" || t === "mtb10" || t === "mtbCustom";
+  }
 
-  document.querySelectorAll(".pointBtn").forEach(btn=>{
-    btn.addEventListener("click", function(){
-      const i = Number(this.dataset.player);
-      const delta = Number(this.dataset.delta);
-      save();
-      if(settings.autoIncrement && state.inTieBreak){
-        if(delta === 0) state.tbPoints[i] = 0;
-        else if(delta > 0) addTieBreakPointAuto(i);
-        else state.tbPoints[i] = Math.max(0, state.tbPoints[i] - 1);
-      } else if(delta === 0){
-        state.points[i] = 0;
-      } else if(settings.autoIncrement){
-        if(delta > 0) addPointAuto(i);
-        else removePointAuto(i);
-      } else {
-        state.points[i] = wrap(state.points[i] + delta, manualPointMax());
+  function matchTiebreakConfig(state) {
+    var d = state.config.deciding;
+    if (d.type === "mtb7") return { pointsToWin: 7, winBy: 2 };
+    if (d.type === "mtb10") return { pointsToWin: 10, winBy: 2 };
+    if (d.type === "matchTiebreak" || d.type === "mtbCustom") {
+      return d.tiebreak || { pointsToWin: 10, winBy: 2 };
+    }
+    return { pointsToWin: 10, winBy: 2 };
+  }
+
+  function evaluateGame(points, gameCfg) {
+    var a = points[0], b = points[1];
+    var type = gameCfg.type || "advantage";
+    if (type === "noAd") {
+      if (a >= 4 && a > b) return { won: true, winner: 0 };
+      if (b >= 4 && b > a) return { won: true, winner: 1 };
+      return { won: false };
+    }
+    if (type === "numeric") {
+      var ptw = gameCfg.pointsToWin || 4;
+      var wb = gameCfg.winBy || 2;
+      if (a >= ptw && a - b >= wb) return { won: true, winner: 0 };
+      if (b >= ptw && b - a >= wb) return { won: true, winner: 1 };
+      return { won: false };
+    }
+    /* advantage */
+    if (a >= 4 && a - b >= 2) return { won: true, winner: 0 };
+    if (b >= 4 && b - a >= 2) return { won: true, winner: 1 };
+    return { won: false };
+  }
+
+  function evaluateTiebreak(points, tbCfg) {
+    var a = points[0], b = points[1];
+    var ptw = tbCfg.pointsToWin || 7;
+    var wb = tbCfg.winBy || 2;
+    if (a >= ptw && a - b >= wb) return { won: true, winner: 0 };
+    if (b >= ptw && b - a >= wb) return { won: true, winner: 1 };
+    return { won: false };
+  }
+
+  function evaluateSet(games, setCfg) {
+    var a = games[0], b = games[1];
+    var gtw = setCfg.gamesToWin;
+    var wb = setCfg.winBy;
+    var tba = setCfg.tiebreakAt;
+    if (tba != null && a === tba && b === tba) {
+      return { action: "START_TIEBREAK" };
+    }
+    if (Math.max(a, b) >= gtw && Math.abs(a - b) >= wb) {
+      return { action: "SET_WON", winner: a > b ? 0 : 1 };
+    }
+    return { action: "CONTINUE" };
+  }
+
+  function displayPointLabels(points, gameCfg) {
+    var type = (gameCfg && gameCfg.type) || "advantage";
+    if (type === "numeric") {
+      return [String(points[0]), String(points[1])];
+    }
+    var a = points[0], b = points[1];
+    var labels = ["Love", "15", "30", "40"];
+    if (type === "noAd") {
+      if (a >= 3 && b >= 3) {
+        if (a === b) return ["Deuce", "Deuce"];
+        /* deciding point — still show Deuce until won; after DP it's game */
+        return ["Deuce", "Deuce"];
       }
-      render();
-    });
-  });
+      return [labels[Math.min(a, 3)] || String(a), labels[Math.min(b, 3)] || String(b)];
+    }
+    /* advantage */
+    if (a >= 3 && b >= 3) {
+      if (a === b) return ["Deuce", "Deuce"];
+      if (a === b + 1) return ["AD", "40"];
+      if (b === a + 1) return ["40", "AD"];
+    }
+    return [labels[Math.min(a, 3)] || String(a), labels[Math.min(b, 3)] || String(b)];
+  }
 
-  document.querySelectorAll(".gameBtn").forEach(btn=>{
-    btn.addEventListener("click", function(){
-      const i = Number(this.dataset.player);
-      const delta = Number(this.dataset.delta);
-      if(delta < 0 && state.games[i] <= 0) return;
-      if(delta === 0 && state.games[i] === 0) return;
-      save();
-      if(delta === 0){
-        state.games[i] = 0;
-      } else if(delta < 0){
-        state.games[i] = Math.max(0, state.games[i] - 1);
-        if(settings.autoIncrement && state.inTieBreak) clearTieBreak();
-      } else if(settings.autoIncrement){
-        awardGame(i);
-      } else {
-        state.games[i] += 1;
+  function formatCompletedSet(entry) {
+    if (entry.kind === "matchTiebreak") {
+      return "[" + entry.tiebreakPoints[0] + "–" + entry.tiebreakPoints[1] + "]";
+    }
+    var g0 = entry.games[0], g1 = entry.games[1];
+    var base = g0 + "–" + g1;
+    if (entry.tiebreakPoints) {
+      return base + " (" + entry.tiebreakPoints[0] + "–" + entry.tiebreakPoints[1] + ")";
+    }
+    return base;
+  }
+
+  function currentServer(state) {
+    if (!state.config.trackServer) return null;
+    if (state.phase === PHASE.SET_TIEBREAK || state.phase === PHASE.MATCH_TIEBREAK) {
+      /* First point: 1 serve, then 2/2/2... */
+      var idx = state.tbPointIndex;
+      var first = state.tbFirstServer != null ? state.tbFirstServer : state.server;
+      if (idx === 0) return first;
+      var block = Math.floor((idx - 1) / 2);
+      return (first + 1 + block) % 2;
+    }
+    /* Alternate every game; sets also rotate */
+    var gamesPlayed = state.games[0] + state.games[1];
+    var setsPlayed = state.completedSets.length;
+    return (state.server + gamesPlayed + setsPlayed) % 2;
+  }
+
+  function nextServerForTiebreak(state) {
+    /* Server who would serve the next game becomes first TB server */
+    var gamesPlayed = state.games[0] + state.games[1];
+    var setsPlayed = state.completedSets.length;
+    return (state.server + gamesPlayed + setsPlayed) % 2;
+  }
+
+  function pushHistory(history, state) {
+    history.push(clone(state));
+    if (history.length > 200) history.shift();
+  }
+
+  function maybeStartMatchTiebreak(state) {
+    if (!isDecidingSet(state)) return false;
+    if (!decidingIsMatchTiebreak(state)) return false;
+    var firstSrv = state.config.trackServer ? nextServerForTiebreak(state) : state.server;
+    state.phase = PHASE.MATCH_TIEBREAK;
+    state.points = [0, 0];
+    state.games = [0, 0];
+    state.tbPointIndex = 0;
+    state.tbFirstServer = firstSrv;
+    return true;
+  }
+
+  function completeSet(state, winner, opts) {
+    opts = opts || {};
+    var entry;
+    if (opts.matchTiebreak) {
+      entry = {
+        kind: "matchTiebreak",
+        winner: winner,
+        tiebreakPoints: [state.points[0], state.points[1]]
+      };
+      state.completedSets.push(entry);
+      state.sets[winner]++;
+      state.points = [0, 0];
+      state.games = [0, 0];
+      state.phase = PHASE.COMPLETE;
+      return;
+    }
+    var games = [state.games[0], state.games[1]];
+    if (opts.tiebreakPoints) {
+      var tba = opts.tiebreakAt != null ? opts.tiebreakAt : activeSetConfig(state).tiebreakAt;
+      games[winner] = tba + 1;
+      games[1 - winner] = tba;
+    }
+    entry = {
+      kind: "set",
+      winner: winner,
+      games: games
+    };
+    if (opts.tiebreakPoints) {
+      entry.tiebreakPoints = opts.tiebreakPoints.slice();
+    }
+    state.completedSets.push(entry);
+    state.sets[winner]++;
+    state.points = [0, 0];
+    state.games = [0, 0];
+    if (state.sets[winner] >= state.config.setsToWin) {
+      state.phase = PHASE.COMPLETE;
+      return;
+    }
+    state.phase = PHASE.GAME;
+    maybeStartMatchTiebreak(state);
+  }
+
+  function awardGameWin(state, winner) {
+    state.games[winner]++;
+    state.points = [0, 0];
+    var setCfg = activeSetConfig(state);
+    var result = evaluateSet(state.games, setCfg);
+    if (result.action === "START_TIEBREAK") {
+      var firstSrv = state.config.trackServer ? nextServerForTiebreak(state) : state.server;
+      state.phase = PHASE.SET_TIEBREAK;
+      state.points = [0, 0];
+      state.tbPointIndex = 0;
+      state.tbFirstServer = firstSrv;
+      return;
+    }
+    if (result.action === "SET_WON") {
+      completeSet(state, result.winner);
+    }
+  }
+
+  function awardPoint(state, player, history) {
+    if (state.phase === PHASE.COMPLETE) return state;
+    if (!state.config.auto) {
+      /* Manual mode: just increment points display value; no progression */
+      if (history) pushHistory(history, state);
+      state.points[player] = Math.max(0, state.points[player] + 1);
+      return state;
+    }
+    if (history) pushHistory(history, state);
+
+    if (state.phase === PHASE.MATCH_TIEBREAK) {
+      state.points[player]++;
+      state.tbPointIndex++;
+      var mtb = evaluateTiebreak(state.points, matchTiebreakConfig(state));
+      if (mtb.won) {
+        completeSet(state, mtb.winner, { matchTiebreak: true });
       }
-      render();
-    });
-  });
+      return state;
+    }
 
-  document.querySelectorAll(".setBtn").forEach(btn=>{
-    btn.addEventListener("click", function(){
-      const i = Number(this.dataset.player);
-      const delta = Number(this.dataset.delta);
-      const other = 1 - i;
-
-      if(delta < 0 && state.sets[i] <= 0) return;
-      if(delta === 0 && state.sets[i] === 0) return;
-
-      save();
-
-      if(delta === 1){
-        state.setLog.push({
-          winner: i,
-          winnerName: playerName(i),
-          winnerGames: state.games[i],
-          loserGames: state.games[other]
+    if (state.phase === PHASE.SET_TIEBREAK) {
+      state.points[player]++;
+      state.tbPointIndex++;
+      var setCfg = activeSetConfig(state);
+      var tb = evaluateTiebreak(state.points, setCfg.tiebreak);
+      if (tb.won) {
+        var tbPts = [state.points[0], state.points[1]];
+        completeSet(state, tb.winner, {
+          tiebreakPoints: tbPts,
+          tiebreakAt: setCfg.tiebreakAt
         });
-        state.sets[i]++;
-      } else if(delta === 0){
-        state.sets[i] = 0;
-      } else {
-        state.sets[i] = Math.max(0, state.sets[i] - 1);
       }
+      return state;
+    }
+
+    /* GAME phase */
+    state.points[player]++;
+    var gameResult = evaluateGame(state.points, state.config.game);
+    if (gameResult.won) {
+      awardGameWin(state, gameResult.winner);
+    }
+    return state;
+  }
+
+  function adjustManual(state, history, field, player, delta) {
+    if (history) pushHistory(history, state);
+    if (delta === 0) {
+      state[field][player] = 0;
+      return state;
+    }
+    state[field][player] = Math.max(0, state[field][player] + delta);
+    return state;
+  }
+
+  function undo(state, history) {
+    if (!history.length) return state;
+    return history.pop();
+  }
+
+  function resetGame(state, history) {
+    if (history) pushHistory(history, state);
+    state.points = [0, 0];
+    if (state.phase === PHASE.SET_TIEBREAK || state.phase === PHASE.MATCH_TIEBREAK) {
+      state.tbPointIndex = 0;
+    }
+    return state;
+  }
+
+  function resetSet(state, history) {
+    if (history) pushHistory(history, state);
+    state.points = [0, 0];
+    state.games = [0, 0];
+    if (state.phase === PHASE.COMPLETE) {
+      /* leave complete alone unless sets allow */
+    } else if (state.phase === PHASE.MATCH_TIEBREAK) {
+      state.tbPointIndex = 0;
+    } else {
+      state.phase = PHASE.GAME;
+      maybeStartMatchTiebreak(state);
+    }
+    return state;
+  }
+
+  function resetMatch(state, history, keepConfig) {
+    var cfg = keepConfig ? clone(state.config) : defaultMatchConfig();
+    var names = state.config.names ? state.config.names.slice() : ["Player 1", "Player 2"];
+    cfg.names = names;
+    var fresh = createInitialState(cfg);
+    if (history) {
+      history.length = 0;
+    }
+    return fresh;
+  }
+
+  /* ========== Engine helpers exposed for tests ========== */
+
+  var Engine = {
+    PHASE: PHASE,
+    defaultMatchConfig: defaultMatchConfig,
+    defaultSetConfig: defaultSetConfig,
+    defaultGameConfig: defaultGameConfig,
+    createInitialState: createInitialState,
+    evaluateGame: evaluateGame,
+    evaluateSet: evaluateSet,
+    evaluateTiebreak: evaluateTiebreak,
+    displayPointLabels: displayPointLabels,
+    formatCompletedSet: formatCompletedSet,
+    awardPoint: awardPoint,
+    awardGameWin: awardGameWin,
+    completeSet: completeSet,
+    isDecidingSet: isDecidingSet,
+    activeSetConfig: activeSetConfig,
+    currentServer: currentServer,
+    pushHistory: pushHistory,
+    undo: undo,
+    resetGame: resetGame,
+    resetSet: resetSet,
+    resetMatch: resetMatch,
+    adjustManual: adjustManual,
+    clone: clone
+  };
+
+  window.TennisEngine = Engine;
+  window.PHASE = PHASE;
+  window.awardPoint = awardPoint;
+  window.evaluateSet = evaluateSet;
+
+  /* ========== UI / App ========== */
+
+  var state = createInitialState(defaultMatchConfig());
+  var history = [];
+  var uiSuspended = false;
+
+  function $(id) { return document.getElementById(id); }
+
+  function playerName(i) {
+    var el = $("n" + i);
+    return (el && el.value.trim()) || (state.config.names && state.config.names[i]) || ("Player " + (i + 1));
+  }
+
+  function persist() {
+    try {
+      var payload = {
+        version: STORAGE_VERSION,
+        state: state,
+        history: history,
+        names: [playerName(0), playerName(1)]
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (e) { /* ignore */ }
+  }
+
+  function loadPersist() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      var data = JSON.parse(raw);
+      if (!data || data.version !== STORAGE_VERSION || !data.state) return false;
+      state = data.state;
+      history = Array.isArray(data.history) ? data.history : [];
+      if (data.names) {
+        state.config.names = data.names;
+        if ($("n0")) $("n0").value = data.names[0] || "Player 1";
+        if ($("n1")) $("n1").value = data.names[1] || "Player 2";
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function statusText() {
+    if (state.phase === PHASE.COMPLETE) {
+      var w = state.sets[0] > state.sets[1] ? 0 : 1;
+      return "Match complete — " + playerName(w) + " wins";
+    }
+    if (state.phase === PHASE.MATCH_TIEBREAK) {
+      return "Match tiebreak";
+    }
+    if (state.phase === PHASE.SET_TIEBREAK) {
+      return "Set tiebreak";
+    }
+    if (!state.config.auto) return "Manual mode";
+    var labels = displayPointLabels(state.points, state.config.game);
+    if (labels[0] === "Deuce") return "Deuce";
+    if (labels[0] === "AD") return "Advantage " + playerName(0);
+    if (labels[1] === "AD") return "Advantage " + playerName(1);
+    return "Game in progress";
+  }
+
+  function render() {
+    if (uiSuspended) return;
+
+    var auto = !!state.config.auto;
+    var inTb = state.phase === PHASE.SET_TIEBREAK || state.phase === PHASE.MATCH_TIEBREAK;
+    var labels = inTb
+      ? [String(state.points[0]), String(state.points[1])]
+      : displayPointLabels(state.points, state.config.game);
+
+    $("p0").textContent = labels[0];
+    $("p1").textContent = labels[1];
+    $("g0").textContent = String(state.games[0]);
+    $("g1").textContent = String(state.games[1]);
+    $("s0").textContent = String(state.sets[0]);
+    $("s1").textContent = String(state.sets[1]);
+    $("tb0").textContent = String(state.points[0]);
+    $("tb1").textContent = String(state.points[1]);
+    $("tbLabel0").textContent = playerName(0);
+    $("tbLabel1").textContent = playerName(1);
+
+    var status = $("statusBar");
+    status.textContent = statusText();
+    status.classList.toggle("complete", state.phase === PHASE.COMPLETE);
+
+    /* Serving highlight */
+    var srv = currentServer(state);
+    $("card0").classList.toggle("serving", state.config.trackServer && srv === 0);
+    $("card1").classList.toggle("serving", state.config.trackServer && srv === 1);
+
+    /* Point button layout */
+    ["pointBtns0", "pointBtns1", "gameBtns0", "gameBtns1", "setBtns0", "setBtns1", "tbBtns0", "tbBtns1"].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.classList.toggle("auto", auto);
+    });
+
+    /* Hide game/set manual controls in auto */
+    document.querySelectorAll(".gameRow, .setRowControls").forEach(function (el) {
+      el.classList.toggle("hideManual", auto);
+    });
+
+    /* Phase / TB box: show when auto+in TB, or always when manual */
+    var tbBox = $("tbBox");
+    var showTb = (!auto) || inTb;
+    tbBox.classList.toggle("show", showTb);
+    tbBox.classList.toggle("active", inTb);
+    if (state.phase === PHASE.MATCH_TIEBREAK) {
+      $("tbTitle").textContent = "Match tiebreak";
+    } else if (state.phase === PHASE.SET_TIEBREAK) {
+      $("tbTitle").textContent = "Set tiebreak";
+    } else {
+      $("tbTitle").textContent = "Tie break (manual)";
+    }
+
+    /* In auto + TB, main point display mirrors TB; hide redundant? keep both synced */
+    if (auto && inTb) {
+      $("pointLabel0").textContent = "TB";
+      $("pointLabel1").textContent = "TB";
+    } else {
+      $("pointLabel0").textContent = "Score";
+      $("pointLabel1").textContent = "Score";
+    }
+
+    /* Completed sets */
+    var list = $("setsList");
+    if (!state.completedSets.length) {
+      list.innerHTML = '<div class="setsEmpty">No completed sets yet</div>';
+    } else {
+      list.innerHTML = state.completedSets.map(function (entry, i) {
+        var label = formatCompletedSet(entry);
+        var winner = playerName(entry.winner);
+        return '<div class="setRow"><span>Set ' + (i + 1) + ': ' + label + '</span><span>' + winner + '</span></div>';
+      }).join("");
+    }
+
+    /* Disable scoring when complete */
+    var disabled = state.phase === PHASE.COMPLETE;
+    document.querySelectorAll(".pointBtn, .gameBtn, .setBtn, .tbBtn").forEach(function (btn) {
+      btn.disabled = disabled && Number(btn.getAttribute("data-delta")) > 0;
+    });
+
+    persist();
+  }
+
+  /* --- Modal / config builders --- */
+
+  function radioVal(name) {
+    var el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : null;
+  }
+
+  function setRadio(name, value) {
+    var el = document.querySelector('input[name="' + name + '"][value="' + value + '"]');
+    if (el) el.checked = true;
+  }
+
+  function numVal(id, fallback) {
+    var el = $(id);
+    if (!el || el.value === "" || el.value == null) return fallback;
+    var n = Number(el.value);
+    return Number.isFinite(n) ? Math.round(n) : fallback;
+  }
+
+  function blankNum(id) {
+    var el = $(id);
+    if (!el || el.value === "" || el.value == null) return null;
+    var n = Number(el.value);
+    return Number.isFinite(n) ? Math.round(n) : null;
+  }
+
+  function buildSetFromNormalChoice() {
+    var choice = radioVal("normalSet");
+    if (choice === "standardTb") {
+      return { gamesToWin: 6, winBy: 2, tiebreakAt: 6, tiebreak: { pointsToWin: 7, winBy: 2 } };
+    }
+    if (choice === "advantage") {
+      return { gamesToWin: 6, winBy: 2, tiebreakAt: null, tiebreak: { pointsToWin: 7, winBy: 2 } };
+    }
+    if (choice === "short") {
+      return { gamesToWin: 4, winBy: 2, tiebreakAt: 3, tiebreak: { pointsToWin: 7, winBy: 2 } };
+    }
+    if (choice === "pro") {
+      return { gamesToWin: 8, winBy: 2, tiebreakAt: 8, tiebreak: { pointsToWin: 7, winBy: 2 } };
+    }
+    /* custom */
+    var tba = blankNum("nsTiebreakAt");
+    return {
+      gamesToWin: numVal("nsGamesToWin", 6),
+      winBy: numVal("nsWinBy", 2),
+      tiebreakAt: tba,
+      tiebreak: { pointsToWin: numVal("nsTbPts", 7), winBy: numVal("nsTbWinBy", 2) }
+    };
+  }
+
+  function buildGameConfig() {
+    var g = radioVal("gameScoring");
+    if (g === "noAd") return { type: "noAd" };
+    if (g === "numeric") {
+      return {
+        type: "numeric",
+        pointsToWin: numVal("numPointsToWin", 4),
+        winBy: numVal("numWinBy", 2)
+      };
+    }
+    return { type: "advantage" };
+  }
+
+  function buildDecidingConfig() {
+    var d = radioVal("decidingSet");
+    if (d === "fullSet") {
+      var tba = blankNum("dsTiebreakAt");
+      return {
+        type: "fullSet",
+        set: {
+          gamesToWin: numVal("dsGamesToWin", 6),
+          winBy: numVal("dsWinBy", 2),
+          tiebreakAt: tba,
+          tiebreak: { pointsToWin: numVal("dsTbPts", 7), winBy: numVal("dsTbWinBy", 2) }
+        }
+      };
+    }
+    if (d === "mtb7") {
+      return { type: "matchTiebreak", tiebreak: { pointsToWin: 7, winBy: 2 } };
+    }
+    if (d === "mtb10") {
+      return { type: "matchTiebreak", tiebreak: { pointsToWin: 10, winBy: 2 } };
+    }
+    if (d === "mtbCustom") {
+      return {
+        type: "matchTiebreak",
+        tiebreak: { pointsToWin: numVal("mtbPts", 10), winBy: numVal("mtbWinBy", 2) }
+      };
+    }
+    return { type: "sameAsNormal" };
+  }
+
+  function buildConfigFromForm() {
+    var mf = radioVal("matchFormat");
+    var setsToWin = mf === "custom" ? numVal("customSetsToWin", 2) : Number(mf) || 2;
+    return {
+      setsToWin: setsToWin,
+      auto: $("autoIncrement").checked,
+      game: buildGameConfig(),
+      set: buildSetFromNormalChoice(),
+      deciding: buildDecidingConfig(),
+      trackServer: $("trackServer").checked,
+      courtEnds: $("courtEnds").checked,
+      noLet: $("noLet").checked,
+      doubles: $("doubles").checked,
+      names: [playerName(0), playerName(1)]
+    };
+  }
+
+  function validateConfig(cfg) {
+    var msgs = [];
+    if (!cfg.setsToWin || cfg.setsToWin < 1) msgs.push("Sets to win must be at least 1.");
+    if (!cfg.set.gamesToWin || cfg.set.gamesToWin < 1) msgs.push("Games to win must be at least 1.");
+    if (!cfg.set.winBy || cfg.set.winBy < 1) msgs.push("Set win-by must be at least 1.");
+    if (cfg.set.tiebreakAt != null && cfg.set.tiebreakAt < 1) msgs.push("Tiebreak-at must be positive or blank.");
+    if (cfg.game.type === "numeric") {
+      if (!cfg.game.pointsToWin || cfg.game.pointsToWin < 1) msgs.push("Numeric points-to-win must be ≥ 1.");
+    }
+    if (cfg.deciding.type === "matchTiebreak") {
+      var tb = cfg.deciding.tiebreak;
+      if (!tb || !tb.pointsToWin || tb.pointsToWin < 1) msgs.push("Match tiebreak points must be ≥ 1.");
+    }
+    if (cfg.deciding.type === "fullSet") {
+      if (!cfg.deciding.set || cfg.deciding.set.gamesToWin < 1) msgs.push("Deciding set games-to-win invalid.");
+    }
+    return msgs;
+  }
+
+  function describeConfig(cfg) {
+    var parts = [];
+    parts.push(cfg.auto ? "Auto scoring" : "Manual scoring");
+    parts.push("first to " + cfg.setsToWin + " set" + (cfg.setsToWin > 1 ? "s" : ""));
+    var g = cfg.game.type;
+    if (g === "advantage") parts.push("advantage games");
+    else if (g === "noAd") parts.push("no-ad games");
+    else parts.push("numeric games (" + cfg.game.pointsToWin + ", win by " + cfg.game.winBy + ")");
+    var s = cfg.set;
+    var setDesc = "sets to " + s.gamesToWin + " win by " + s.winBy;
+    if (s.tiebreakAt == null) setDesc += ", no TB";
+    else setDesc += ", TB at " + s.tiebreakAt + "–" + s.tiebreakAt + " (to " + s.tiebreak.pointsToWin + ")";
+    parts.push(setDesc);
+    if (cfg.setsToWin > 1) {
+      var d = cfg.deciding;
+      if (d.type === "sameAsNormal") parts.push("deciding set same as normal");
+      else if (d.type === "fullSet") parts.push("custom deciding set");
+      else if (d.type === "matchTiebreak") {
+        parts.push(d.tiebreak.pointsToWin + "-pt match tiebreak");
+      }
+    }
+    var opts = [];
+    if (cfg.trackServer) opts.push("track server");
+    if (cfg.courtEnds) opts.push("change ends");
+    if (cfg.noLet) opts.push("no-let");
+    if (cfg.doubles) opts.push("doubles");
+    if (opts.length) parts.push(opts.join(", "));
+    return parts.join(" · ") + ".";
+  }
+
+  function updateModalUI() {
+    var setsToWin = radioVal("matchFormat") === "custom"
+      ? numVal("customSetsToWin", 2)
+      : Number(radioVal("matchFormat")) || 2;
+    $("decidingBlock").style.display = setsToWin > 1 ? "" : "none";
+
+    $("normalCustomFields").classList.toggle("show", radioVal("normalSet") === "custom");
+    $("decidingFullFields").classList.toggle("show", radioVal("decidingSet") === "fullSet");
+    $("mtbCustomFields").classList.toggle("show", radioVal("decidingSet") === "mtbCustom");
+
+    var cfg = buildConfigFromForm();
+    $("formatPreview").textContent = describeConfig(cfg);
+    var msgs = validateConfig(cfg);
+    $("validationMsg").textContent = msgs.join(" ");
+    $("matchStart").disabled = msgs.length > 0;
+  }
+
+  function applyPreset(name) {
+    document.querySelectorAll(".presetBtn").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-preset") === name);
+    });
+    $("autoIncrement").checked = true;
+    $("trackServer").checked = false;
+    $("courtEnds").checked = false;
+    $("noLet").checked = false;
+    $("doubles").checked = false;
+
+    if (name === "standard") {
+      setRadio("matchFormat", "2");
+      setRadio("gameScoring", "advantage");
+      setRadio("normalSet", "standardTb");
+      setRadio("decidingSet", "sameAsNormal");
+    } else if (name === "noAdMtb") {
+      setRadio("matchFormat", "2");
+      setRadio("gameScoring", "noAd");
+      setRadio("normalSet", "standardTb");
+      setRadio("decidingSet", "mtb10");
+    } else if (name === "advantage") {
+      setRadio("matchFormat", "2");
+      setRadio("gameScoring", "advantage");
+      setRadio("normalSet", "advantage");
+      setRadio("decidingSet", "sameAsNormal");
+    } else if (name === "fast4") {
+      setRadio("matchFormat", "2");
+      setRadio("gameScoring", "noAd");
+      setRadio("normalSet", "short");
+      setRadio("decidingSet", "mtb10");
+    } else if (name === "pro") {
+      setRadio("matchFormat", "1");
+      setRadio("gameScoring", "advantage");
+      setRadio("normalSet", "pro");
+      setRadio("decidingSet", "sameAsNormal");
+    } else {
+      setRadio("matchFormat", "custom");
+      setRadio("gameScoring", "advantage");
+      setRadio("normalSet", "custom");
+      setRadio("decidingSet", "sameAsNormal");
+    }
+    updateModalUI();
+  }
+
+  function openModal() {
+    $("matchOverlay").classList.add("open");
+    $("matchOverlay").setAttribute("aria-hidden", "false");
+    updateModalUI();
+  }
+
+  function closeModal() {
+    $("matchOverlay").classList.remove("open");
+    $("matchOverlay").setAttribute("aria-hidden", "true");
+  }
+
+  function startNewMatch() {
+    var cfg = buildConfigFromForm();
+    var msgs = validateConfig(cfg);
+    if (msgs.length) {
+      $("validationMsg").textContent = msgs.join(" ");
+      return;
+    }
+    cfg.names = [playerName(0), playerName(1)];
+    history = [];
+    state = createInitialState(cfg);
+    closeModal();
+    render();
+  }
+
+  /* --- Actions --- */
+
+  function doAward(player) {
+    if (state.phase === PHASE.COMPLETE) return;
+    if (state.config.auto) {
+      awardPoint(state, player, history);
+    } else {
+      /* Manual: if TB phase box used separately — main + still points */
+      if (state.phase === PHASE.SET_TIEBREAK || state.phase === PHASE.MATCH_TIEBREAK) {
+        awardPoint(state, player, history);
+      } else {
+        adjustManual(state, history, "points", player, 1);
+      }
+    }
+    render();
+  }
+
+  function doPointDelta(player, delta) {
+    if (state.config.auto) {
+      if (delta > 0) {
+        doAward(player);
+      } else if (delta < 0) {
+        /* undo last point via history if possible, else decrement */
+        if (history.length) {
+          state = undo(state, history);
+        } else {
+          state.points[player] = Math.max(0, state.points[player] - 1);
+        }
+        render();
+      }
+      return;
+    }
+    adjustManual(state, history, "points", player, delta);
+    render();
+  }
+
+  function doTbDelta(player, delta) {
+    if (state.config.auto) {
+      if (state.phase !== PHASE.SET_TIEBREAK && state.phase !== PHASE.MATCH_TIEBREAK) return;
+      if (delta > 0) {
+        awardPoint(state, player, history);
+      } else if (delta < 0 && history.length) {
+        state = undo(state, history);
+      }
+      render();
+      return;
+    }
+    /* Manual TB edits */
+    if (history) pushHistory(history, state);
+    if (delta === 0) state.points[player] = 0;
+    else state.points[player] = Math.max(0, state.points[player] + delta);
+    render();
+  }
+
+  async function shareScore() {
+    var canvas = document.createElement("canvas");
+    canvas.width = 720;
+    canvas.height = 900;
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#101512";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#b8ff3d";
+    ctx.font = "bold 36px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Tennis Score", 360, 60);
+
+    ctx.fillStyle = "#c2cec4";
+    ctx.font = "20px sans-serif";
+    ctx.fillText(statusText(), 360, 100);
+
+    var n0 = playerName(0), n1 = playerName(1);
+    var labels = (state.phase === PHASE.SET_TIEBREAK || state.phase === PHASE.MATCH_TIEBREAK)
+      ? [String(state.points[0]), String(state.points[1])]
+      : displayPointLabels(state.points, state.config.game);
+
+    function drawPlayer(x, name, color, pts, g, s) {
+      ctx.fillStyle = "#1b241e";
+      roundRect(ctx, x, 140, 300, 280, 16);
+      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.font = "bold 28px sans-serif";
+      ctx.fillText(name, x + 150, 190);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 56px sans-serif";
+      ctx.fillText(pts, x + 150, 270);
+      ctx.font = "22px sans-serif";
+      ctx.fillStyle = "#c2cec4";
+      ctx.fillText("Games " + g + "  Sets " + s, x + 150, 330);
+    }
+
+    drawPlayer(40, n0, "#b8ff3d", labels[0], state.games[0], state.sets[0]);
+    drawPlayer(380, n1, "#69c6ff", labels[1], state.games[1], state.sets[1]);
+
+    ctx.fillStyle = "#c2cec4";
+    ctx.font = "22px sans-serif";
+    ctx.textAlign = "left";
+    var y = 480;
+    ctx.fillText("Completed sets", 40, y);
+    y += 36;
+    if (!state.completedSets.length) {
+      ctx.fillStyle = "#7f8f84";
+      ctx.fillText("None yet", 40, y);
+    } else {
+      state.completedSets.forEach(function (entry, i) {
+        ctx.fillStyle = "#fff";
+        ctx.fillText("Set " + (i + 1) + ": " + formatCompletedSet(entry) + " — " + playerName(entry.winner), 40, y);
+        y += 32;
+      });
+    }
+
+    function roundRect(c, x, y0, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y0);
+      c.arcTo(x + w, y0, x + w, y0 + h, r);
+      c.arcTo(x + w, y0 + h, x, y0 + h, r);
+      c.arcTo(x, y0 + h, x, y0, r);
+      c.arcTo(x, y0, x + w, y0, r);
+      c.closePath();
+    }
+
+    var blob = await new Promise(function (res) { canvas.toBlob(res, "image/png"); });
+    var file = new File([blob], "tennis-score.png", { type: "image/png" });
+    var text = n0 + " " + state.sets[0] + "–" + state.sets[1] + " " + n1;
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: "Tennis Score", text: text });
+    } else if (navigator.share) {
+      await navigator.share({ title: "Tennis Score", text: text });
+    } else {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "tennis-score.png";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  /* --- Event wiring --- */
+
+  document.querySelectorAll(".pointBtn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var p = Number(btn.getAttribute("data-player"));
+      var d = Number(btn.getAttribute("data-delta"));
+      doPointDelta(p, d);
+    });
+  });
+
+  document.querySelectorAll(".gameBtn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (state.config.auto) return;
+      var p = Number(btn.getAttribute("data-player"));
+      var d = Number(btn.getAttribute("data-delta"));
+      adjustManual(state, history, "games", p, d);
       render();
     });
   });
 
-  document.querySelectorAll(".tbBtn").forEach(btn=>{
-    btn.addEventListener("click", function(){
-      const i = Number(this.dataset.player);
-      const delta = Number(this.dataset.delta);
-      save();
-      if(delta === 0){
-        state.tbPoints[i] = 0;
-      } else if(settings.autoIncrement){
-        if(!state.inTieBreak) return;
-        if(delta > 0) addTieBreakPointAuto(i);
-        else state.tbPoints[i] = Math.max(0, state.tbPoints[i] - 1);
-      } else {
-        state.tbPoints[i] = Math.max(0, state.tbPoints[i] + delta);
-      }
+  document.querySelectorAll(".setBtn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (state.config.auto) return;
+      var p = Number(btn.getAttribute("data-player"));
+      var d = Number(btn.getAttribute("data-delta"));
+      adjustManual(state, history, "sets", p, d);
       render();
     });
   });
 
-  document.getElementById("undoBtn").addEventListener("click", function(){
-    if(!history.length) return;
-    state = JSON.parse(history.pop());
-    if(!state.setLog) state.setLog = [];
-    if(!state.tbPoints) state.tbPoints = [0, 0];
-    if(typeof state.inTieBreak !== "boolean") state.inTieBreak = false;
+  document.querySelectorAll(".tbBtn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var p = Number(btn.getAttribute("data-player"));
+      var d = Number(btn.getAttribute("data-delta"));
+      doTbDelta(p, d);
+    });
+  });
+
+  $("undoBtn").addEventListener("click", function () {
+    if (!history.length) return;
+    state = undo(state, history);
     render();
   });
 
-  document.getElementById("resetBtn").addEventListener("click", openMatchSetup);
-
-  function roundRect(ctx, x, y, w, h, r){
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  }
-
-  function buildScoreBlob(){
-    const logLines = state.setLog.map(function(entry){
-      return entry.winnerName + " " + entry.winnerGames + " - " + entry.loserGames;
-    });
-    const extra = Math.max(0, logLines.length - 3) * 36;
-    const W = 1080, H = 720 + extra, dpr = 2;
-    const canvas = document.createElement("canvas");
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    const ctx = canvas.getContext("2d");
-    ctx.scale(dpr, dpr);
-
-    ctx.fillStyle = "#101512";
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "700 48px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("Tennis Score", W / 2, 78);
-
-    const names = [playerName(0), playerName(1)];
-    const accents = ["#b8ff3d", "#69c6ff"];
-    const cardW = 460, cardH = 420, gap = 40;
-    const startX = (W - (cardW * 2 + gap)) / 2;
-    const startY = 120;
-
-    for(let i = 0; i < 2; i++){
-      const x = startX + i * (cardW + gap);
-      const y = startY;
-
-      ctx.fillStyle = "#1b241e";
-      roundRect(ctx, x, y, cardW, cardH, 28);
-      ctx.fill();
-      ctx.strokeStyle = "#3b4f40";
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      ctx.fillStyle = accents[i];
-      roundRect(ctx, x + 28, y + 28, cardW - 56, 70, 16);
-      ctx.fill();
-      ctx.fillStyle = i === 0 ? "#132000" : "#061a24";
-      ctx.font = "800 34px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-      ctx.textAlign = "center";
-      const name = names[i].length > 18 ? names[i].slice(0, 17) + "…" : names[i];
-      ctx.fillText(name, x + cardW / 2, y + 74);
-
-      const rows = [
-        ["Points", pointLabel(state.points[i])],
-        ["Games", String(state.games[i])],
-        ["Sets", String(state.sets[i])]
-      ];
-      rows.forEach(function(row, ri){
-        const ry = y + 150 + ri * 85;
-        ctx.fillStyle = "#c2cec4";
-        ctx.font = "600 28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-        ctx.textAlign = "left";
-        ctx.fillText(row[0], x + 40, ry);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "900 56px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-        ctx.textAlign = "right";
-        ctx.fillText(row[1], x + cardW - 40, ry + 8);
-      });
-    }
-
-    if(logLines.length){
-      let y = startY + cardH + 50;
-      ctx.fillStyle = "#c2cec4";
-      ctx.font = "700 28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-      ctx.textAlign = "left";
-      ctx.fillText("Set results", startX, y);
-      y += 40;
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "600 28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-      logLines.forEach(function(line){
-        ctx.fillText(line, startX, y);
-        y += 36;
-      });
-    }
-
-    return new Promise(function(resolve){
-      canvas.toBlob(function(blob){ resolve(blob); }, "image/png");
-    });
-  }
-
-  function downloadBlob(blob, filename){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-  }
-
-  document.getElementById("shareBtn").addEventListener("click", async function(){
-    const btn = this;
-    btn.disabled = true;
-    try{
-      const blob = await buildScoreBlob();
-      if(!blob) throw new Error("Could not create image");
-      const file = new File([blob], "tennis-score.png", { type: "image/png" });
-      const summary = playerName(0) + " " + pointLabel(state.points[0]) + "/" + state.games[0] + "/" + state.sets[0]
-        + " vs " + playerName(1) + " " + pointLabel(state.points[1]) + "/" + state.games[1] + "/" + state.sets[1];
-      const shareData = { files: [file], title: "Tennis Score", text: summary };
-
-      if(navigator.canShare && navigator.canShare({ files: [file] })){
-        await navigator.share(shareData);
-      } else {
-        downloadBlob(blob, "tennis-score.png");
-      }
-    } catch(err){
-      if(err && err.name === "AbortError") return;
-      alert("Sharing failed. Try again or take a screenshot.");
-    } finally {
-      btn.disabled = false;
-    }
+  $("shareBtn").addEventListener("click", function () {
+    shareScore().catch(function () { /* ignore */ });
   });
 
+  $("newMatchBtn").addEventListener("click", openModal);
+  $("matchClose").addEventListener("click", closeModal);
+  $("matchCancel").addEventListener("click", closeModal);
+  $("matchStart").addEventListener("click", startNewMatch);
+
+  $("resetGameBtn").addEventListener("click", function () {
+    resetGame(state, history);
+    render();
+  });
+
+  $("resetSetBtn").addEventListener("click", function () {
+    if (!confirm("Reset the current set?")) return;
+    resetSet(state, history);
+    render();
+  });
+
+  $("resetMatchBtn").addEventListener("click", function () {
+    if (!confirm("Reset the entire match?")) return;
+    state = resetMatch(state, history, true);
+    history = [];
+    render();
+  });
+
+  $("n0").addEventListener("change", function () {
+    state.config.names[0] = playerName(0);
+    render();
+  });
+  $("n1").addEventListener("change", function () {
+    state.config.names[1] = playerName(1);
+    render();
+  });
+
+  document.querySelectorAll(".presetBtn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      applyPreset(btn.getAttribute("data-preset"));
+    });
+  });
+
+  $("matchOverlay").addEventListener("change", updateModalUI);
+  $("matchOverlay").addEventListener("input", updateModalUI);
+
+  /* ========== Tests ========== */
+
+  function assert(cond, msg) {
+    if (!cond) throw new Error(msg || "Assertion failed");
+  }
+
+  function runScenario(name, fn) {
+    var result = { name: name, pass: false, error: null };
+    try {
+      fn();
+      result.pass = true;
+    } catch (e) {
+      result.pass = false;
+      result.error = e.message || String(e);
+    }
+    return result;
+  }
+
+  function makeState(partial) {
+    var cfg = defaultMatchConfig();
+    if (partial && partial.config) {
+      Object.keys(partial.config).forEach(function (k) {
+        cfg[k] = partial.config[k];
+      });
+    }
+    var s = createInitialState(cfg);
+    if (partial) {
+      Object.keys(partial).forEach(function (k) {
+        if (k === "config") return;
+        s[k] = partial[k];
+      });
+    }
+    return s;
+  }
+
+  function winGameAdv(s, hist, winner) {
+    /* From 0-0 advantage: need 4 points if opponent has 0 */
+    for (var i = 0; i < 4; i++) awardPoint(s, winner, hist);
+  }
+
+  window.runTennisTests = function () {
+    var savedState = clone(state);
+    var savedHistory = clone(history);
+    var savedNames = [$("n0").value, $("n1").value];
+    uiSuspended = true;
+
+    var results = [];
+
+    results.push(runScenario("advantage: 4-0 wins game", function () {
+      var s = makeState({ config: { auto: true, game: { type: "advantage" } } });
+      var h = [];
+      winGameAdv(s, h, 0);
+      assert(s.games[0] === 1 && s.games[1] === 0, "games should be 1-0");
+      assert(s.points[0] === 0 && s.points[1] === 0, "points reset");
+    }));
+
+    results.push(runScenario("advantage: deuce and AD", function () {
+      var s = makeState({ config: { auto: true, game: { type: "advantage" } } });
+      var h = [];
+      for (var i = 0; i < 3; i++) { awardPoint(s, 0, h); awardPoint(s, 1, h); }
+      var labels = displayPointLabels(s.points, s.config.game);
+      assert(labels[0] === "Deuce" && labels[1] === "Deuce", "should be deuce");
+      awardPoint(s, 0, h);
+      labels = displayPointLabels(s.points, s.config.game);
+      assert(labels[0] === "AD", "AD for p0");
+      awardPoint(s, 1, h);
+      labels = displayPointLabels(s.points, s.config.game);
+      assert(labels[0] === "Deuce", "back to deuce");
+      awardPoint(s, 0, h);
+      awardPoint(s, 0, h);
+      assert(s.games[0] === 1, "won from AD");
+    }));
+
+    results.push(runScenario("no-ad: DP at 3-3", function () {
+      var s = makeState({ config: { auto: true, game: { type: "noAd" } } });
+      var h = [];
+      for (var i = 0; i < 3; i++) { awardPoint(s, 0, h); awardPoint(s, 1, h); }
+      assert(s.games[0] === 0, "still 0 games at 3-3");
+      awardPoint(s, 1, h);
+      assert(s.games[1] === 1 && s.points[0] === 0, "P2 wins DP");
+    }));
+
+    results.push(runScenario("evaluateSet: START_TIEBREAK at 6-6", function () {
+      var r = evaluateSet([6, 6], defaultSetConfig());
+      assert(r.action === "START_TIEBREAK", "expected START_TIEBREAK");
+    }));
+
+    results.push(runScenario("evaluateSet: SET_WON 6-4", function () {
+      var r = evaluateSet([6, 4], defaultSetConfig());
+      assert(r.action === "SET_WON" && r.winner === 0, "P0 wins set");
+    }));
+
+    results.push(runScenario("evaluateSet: continue 6-5", function () {
+      var r = evaluateSet([6, 5], defaultSetConfig());
+      assert(r.action === "CONTINUE", "must continue");
+    }));
+
+    results.push(runScenario("set TB: winner stores 7-6 (tb pts)", function () {
+      var s = makeState({
+        config: { auto: true, setsToWin: 2, game: { type: "advantage" }, set: defaultSetConfig() },
+        games: [6, 6],
+        phase: PHASE.SET_TIEBREAK,
+        points: [0, 0]
+      });
+      var h = [];
+      for (var i = 0; i < 7; i++) awardPoint(s, 0, h);
+      assert(s.sets[0] === 1, "won set");
+      assert(s.completedSets.length === 1, "one completed set");
+      var e = s.completedSets[0];
+      assert(e.games[0] === 7 && e.games[1] === 6, "games 7-6");
+      assert(e.tiebreakPoints && e.tiebreakPoints[0] === 7 && e.tiebreakPoints[1] === 0, "tb 7-0");
+      assert(formatCompletedSet(e) === "7–6 (7–0)", "format " + formatCompletedSet(e));
+    }));
+
+    results.push(runScenario("short set TB at 3-3", function () {
+      var short = { gamesToWin: 4, winBy: 2, tiebreakAt: 3, tiebreak: { pointsToWin: 7, winBy: 2 } };
+      var s = makeState({
+        config: { auto: true, setsToWin: 1, game: { type: "noAd" }, set: short },
+        games: [3, 2]
+      });
+      var h = [];
+      /* win game to 3-3 → TB */
+      for (var i = 0; i < 4; i++) awardPoint(s, 1, h);
+      assert(s.phase === PHASE.SET_TIEBREAK, "enter TB at 3-3");
+    }));
+
+    results.push(runScenario("pro set first to 8, TB at 8-8", function () {
+      var pro = { gamesToWin: 8, winBy: 2, tiebreakAt: 8, tiebreak: { pointsToWin: 7, winBy: 2 } };
+      var r = evaluateSet([8, 8], pro);
+      assert(r.action === "START_TIEBREAK", "TB at 8-8");
+      r = evaluateSet([8, 6], pro);
+      assert(r.action === "SET_WON" && r.winner === 0, "8-6 wins");
+    }));
+
+    results.push(runScenario("match: first to 2 sets", function () {
+      var s = makeState({
+        config: {
+          auto: true,
+          setsToWin: 2,
+          game: { type: "advantage" },
+          set: { gamesToWin: 6, winBy: 2, tiebreakAt: null, tiebreak: { pointsToWin: 7, winBy: 2 } },
+          deciding: { type: "sameAsNormal" }
+        }
+      });
+      var h = [];
+      function winSet(winner) {
+        while (s.sets[0] + s.sets[1] < 2 && s.phase !== PHASE.COMPLETE) {
+          /* win 6 games quickly */
+          var before = s.sets[0] + s.sets[1];
+          while (s.sets[0] + s.sets[1] === before && s.phase !== PHASE.COMPLETE) {
+            winGameAdv(s, h, winner);
+            if (s.games[winner] >= 6 && Math.abs(s.games[0] - s.games[1]) >= 2) break;
+          }
+          if (s.sets[0] + s.sets[1] === before && s.phase === PHASE.GAME) {
+            /* force via complete if needed */
+            s.games = winner === 0 ? [6, 0] : [0, 6];
+            awardGameWin(s, winner);
+          }
+          if (s.sets[winner] >= 2) break;
+          if (before !== s.sets[0] + s.sets[1]) break;
+        }
+      }
+      /* Win two sets for P0 */
+      s.games = [5, 0];
+      winGameAdv(s, h, 0);
+      assert(s.sets[0] === 1, "set 1 won");
+      s.games = [5, 0];
+      winGameAdv(s, h, 0);
+      assert(s.sets[0] === 2 && s.phase === PHASE.COMPLETE, "match complete");
+    }));
+
+    results.push(runScenario("match tiebreak stored as [10-7]", function () {
+      var s = makeState({
+        config: {
+          auto: true,
+          setsToWin: 2,
+          game: { type: "noAd" },
+          set: defaultSetConfig(),
+          deciding: { type: "matchTiebreak", tiebreak: { pointsToWin: 10, winBy: 2 } }
+        },
+        sets: [1, 1],
+        phase: PHASE.MATCH_TIEBREAK,
+        points: [0, 0]
+      });
+      var h = [];
+      for (var i = 0; i < 10; i++) awardPoint(s, 0, h);
+      for (var j = 0; j < 7; j++) { /* already ended at 10-0 */ }
+      assert(s.phase === PHASE.COMPLETE, "complete after MTB");
+      var e = s.completedSets[s.completedSets.length - 1];
+      assert(e.kind === "matchTiebreak", "kind matchTiebreak");
+      assert(formatCompletedSet(e).indexOf("[") === 0, "bracket format");
+      /* replay with 10-7 */
+      s = makeState({
+        config: {
+          auto: true,
+          setsToWin: 2,
+          deciding: { type: "matchTiebreak", tiebreak: { pointsToWin: 10, winBy: 2 } }
+        },
+        sets: [1, 1],
+        phase: PHASE.MATCH_TIEBREAK,
+        points: [9, 7]
+      });
+      h = [];
+      awardPoint(s, 0, h);
+      e = s.completedSets[0];
+      assert(e.tiebreakPoints[0] === 10 && e.tiebreakPoints[1] === 7, "10-7");
+      assert(formatCompletedSet(e) === "[10–7]", "format [10–7] got " + formatCompletedSet(e));
+      assert(e.games == null || e.kind === "matchTiebreak", "not a 1-0 set");
+    }));
+
+    results.push(runScenario("undo restores snapshot", function () {
+      var s = makeState({ config: { auto: true, game: { type: "advantage" } } });
+      var h = [];
+      awardPoint(s, 0, h);
+      assert(s.points[0] === 1, "point awarded");
+      s = undo(s, h);
+      assert(s.points[0] === 0, "undo restored");
+    }));
+
+    results.push(runScenario("advantage set: no TB at 6-6", function () {
+      var adv = { gamesToWin: 6, winBy: 2, tiebreakAt: null, tiebreak: { pointsToWin: 7, winBy: 2 } };
+      var r = evaluateSet([6, 6], adv);
+      assert(r.action === "CONTINUE", "continue without TB");
+      r = evaluateSet([8, 6], adv);
+      assert(r.action === "SET_WON", "8-6 wins advantage set");
+    }));
+
+    results.push(runScenario("numeric game scoring", function () {
+      var s = makeState({
+        config: { auto: true, game: { type: "numeric", pointsToWin: 4, winBy: 2 } }
+      });
+      var h = [];
+      for (var i = 0; i < 4; i++) awardPoint(s, 0, h);
+      assert(s.games[0] === 1, "numeric 4-0 wins");
+    }));
+
+    results.push(runScenario("maybe enter MTB when sets 1-1", function () {
+      var s = makeState({
+        config: {
+          auto: true,
+          setsToWin: 2,
+          game: { type: "advantage" },
+          set: { gamesToWin: 6, winBy: 2, tiebreakAt: null, tiebreak: { pointsToWin: 7, winBy: 2 } },
+          deciding: { type: "matchTiebreak", tiebreak: { pointsToWin: 10, winBy: 2 } }
+        }
+      });
+      var h = [];
+      s.games = [5, 0];
+      winGameAdv(s, h, 0);
+      assert(s.sets[0] === 1, "first set");
+      s.games = [0, 5];
+      winGameAdv(s, h, 1);
+      assert(s.sets[1] === 1, "second set to P1");
+      assert(s.phase === PHASE.MATCH_TIEBREAK, "should start MTB got " + s.phase);
+    }));
+
+    console.table(results.map(function (r) {
+      return { name: r.name, pass: r.pass, error: r.error || "" };
+    }));
+
+    var passed = results.filter(function (r) { return r.pass; }).length;
+    console.log("Tennis tests: " + passed + "/" + results.length + " passed");
+
+    /* Restore UI */
+    state = savedState;
+    history = savedHistory;
+    $("n0").value = savedNames[0];
+    $("n1").value = savedNames[1];
+    uiSuspended = false;
+    render();
+
+    return results;
+  };
+
+  /* ========== Boot ========== */
+
+  $("jsWarning").style.display = "none";
+  loadPersist();
+  applyPreset("standard");
+  closeModal();
   render();
+
+  /* Expose for debugging / external checks */
+  window.getTennisState = function () { return clone(state); };
 })();
 </script>
 </body>
