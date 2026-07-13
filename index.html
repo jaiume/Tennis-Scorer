@@ -286,7 +286,11 @@
         <input type="number" id="setFirstTo" min="1" max="99" value="6" inputmode="numeric">
         <label for="setFirstTo">games</label>
       </div>
-      <p class="settingHint">Used when auto increment is on.</p>
+      <div class="inlineN">
+        <label for="setWinBy">Win by</label>
+        <input type="number" id="setWinBy" min="1" max="20" value="2" inputmode="numeric">
+      </div>
+      <p class="settingHint">Used when auto increment is on. Play continues until First to and Win by are both met.</p>
     </div>
 
     <div class="matchActions">
@@ -304,7 +308,8 @@
     scoringType: "tennis-adult",
     integerN: 11,
     integerWinBy: 2,
-    setFirstTo: 6
+    setFirstTo: 6,
+    setWinBy: 2
   };
 
   let settings = loadSettings();
@@ -322,6 +327,7 @@
         integerN: clampInt(parsed.integerN, 1, 99, 11),
         integerWinBy: clampInt(parsed.integerWinBy, 1, 20, 2),
         setFirstTo: clampInt(parsed.setFirstTo, 1, 99, 6),
+        setWinBy: clampInt(parsed.setWinBy, 1, 20, 2),
         scoringType: ["integer","tennis-simple","tennis-adult"].indexOf(parsed.scoringType) >= 0
           ? parsed.scoringType : "tennis-adult",
         autoIncrement: !!parsed.autoIncrement
@@ -373,6 +379,14 @@
     return ((value % max) + max) % max;
   }
 
+  function hasWonSet(winner){
+    const loser = 1 - winner;
+    return (
+      state.games[winner] >= settings.setFirstTo &&
+      (state.games[winner] - state.games[loser]) >= settings.setWinBy
+    );
+  }
+
   function awardSet(winner){
     const other = 1 - winner;
     state.setLog.push({
@@ -389,7 +403,7 @@
   function awardGame(winner){
     state.games[winner]++;
     state.points = [0, 0];
-    if(settings.autoIncrement && state.games[winner] >= settings.setFirstTo){
+    if(settings.autoIncrement && hasWonSet(winner)){
       awardSet(winner);
     }
   }
@@ -506,6 +520,7 @@
     document.getElementById("integerN").value = settings.integerN;
     document.getElementById("integerWinBy").value = settings.integerWinBy;
     document.getElementById("setFirstTo").value = settings.setFirstTo;
+    document.getElementById("setWinBy").value = settings.setWinBy;
     document.querySelectorAll('input[name="scoringType"]').forEach(function(radio){
       radio.checked = radio.value === settings.scoringType;
     });
@@ -518,7 +533,8 @@
       scoringType: scoringTypeEl ? scoringTypeEl.value : "tennis-adult",
       integerN: clampInt(document.getElementById("integerN").value, 1, 99, 11),
       integerWinBy: clampInt(document.getElementById("integerWinBy").value, 1, 20, 2),
-      setFirstTo: clampInt(document.getElementById("setFirstTo").value, 1, 99, 6)
+      setFirstTo: clampInt(document.getElementById("setFirstTo").value, 1, 99, 6),
+      setWinBy: clampInt(document.getElementById("setWinBy").value, 1, 20, 2)
     };
   }
 
@@ -541,6 +557,7 @@
     document.getElementById("integerN").value = next.integerN;
     document.getElementById("integerWinBy").value = next.integerWinBy;
     document.getElementById("setFirstTo").value = next.setFirstTo;
+    document.getElementById("setWinBy").value = next.setWinBy;
     save();
     settings = next;
     saveSettings();
@@ -588,7 +605,7 @@
         state.games[i] += 1;
         if(settings.autoIncrement){
           state.points = [0, 0];
-          if(state.games[i] >= settings.setFirstTo){
+          if(hasWonSet(i)){
             awardSet(i);
           }
         }
