@@ -381,10 +381,6 @@
         <label class="switch"><input type="checkbox" id="courtEnds"><span></span></label>
       </div>
       <div class="settingRow">
-        <label for="noLet">No-let serves</label>
-        <label class="switch"><input type="checkbox" id="noLet"><span></span></label>
-      </div>
-      <div class="settingRow">
         <label for="doubles">Doubles</label>
         <label class="switch"><input type="checkbox" id="doubles"><span></span></label>
       </div>
@@ -446,7 +442,6 @@
       deciding: { type: "sameAsNormal" },
       trackServer: false,
       courtEnds: false,
-      noLet: false,
       doubles: false,
       names: ["Player 1", "Player 2"]
     };
@@ -1077,7 +1072,6 @@
       deciding: buildDecidingConfig(),
       trackServer: $("trackServer").checked,
       courtEnds: $("courtEnds").checked,
-      noLet: $("noLet").checked,
       doubles: $("doubles").checked,
       names: [playerName(0), playerName(1)]
     };
@@ -1126,7 +1120,6 @@
     var opts = [];
     if (cfg.trackServer) opts.push("track server");
     if (cfg.courtEnds) opts.push("change ends");
-    if (cfg.noLet) opts.push("no-let");
     if (cfg.doubles) opts.push("doubles");
     if (opts.length) parts.push(opts.join(", "));
     return parts.join(" · ") + ".";
@@ -1166,7 +1159,6 @@
     $("autoIncrement").checked = true;
     $("trackServer").checked = false;
     $("courtEnds").checked = false;
-    $("noLet").checked = false;
     $("doubles").checked = false;
 
     if (name === "standard") {
