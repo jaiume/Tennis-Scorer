@@ -135,7 +135,7 @@
   .scoringOption strong{display:block;font-size:14px}
   .scoringOption span{display:block;font-size:12px;color:#7f8f84;margin-top:2px;font-weight:500}
   .inlineN{
-    display:flex;align-items:center;gap:8px;margin-top:8px;
+    display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;
   }
   .inlineN label{font-size:13px;color:#c2cec4;font-weight:600}
   .inlineN input{
@@ -251,10 +251,14 @@
           <input type="radio" name="scoringType" value="integer">
           <div>
             <strong>Integer</strong>
-            <span>1, 2, 3 … N</span>
+            <span>1, 2, 3 … until first to &amp; win by</span>
             <div class="inlineN">
-              <label for="integerN">N</label>
+              <label for="integerN">First to</label>
               <input type="number" id="integerN" min="1" max="99" value="11" inputmode="numeric">
+            </div>
+            <div class="inlineN">
+              <label for="integerWinBy">Win by</label>
+              <input type="number" id="integerWinBy" min="1" max="20" value="2" inputmode="numeric">
             </div>
           </div>
         </label>
@@ -299,6 +303,7 @@
     autoIncrement: false,
     scoringType: "tennis-adult",
     integerN: 11,
+    integerWinBy: 2,
     setFirstTo: 6
   };
 
@@ -315,6 +320,7 @@
       const parsed = JSON.parse(raw);
       return Object.assign({}, defaultSettings, parsed, {
         integerN: clampInt(parsed.integerN, 1, 99, 11),
+        integerWinBy: clampInt(parsed.integerWinBy, 1, 20, 2),
         setFirstTo: clampInt(parsed.setFirstTo, 1, 99, 6),
         scoringType: ["integer","tennis-simple","tennis-adult"].indexOf(parsed.scoringType) >= 0
           ? parsed.scoringType : "tennis-adult",
@@ -421,8 +427,12 @@
   }
 
   function applyIntegerPoint(winner){
+    const loser = 1 - winner;
     state.points[winner] += 1;
-    if(state.points[winner] >= settings.integerN){
+    if(
+      state.points[winner] >= settings.integerN &&
+      (state.points[winner] - state.points[loser]) >= settings.integerWinBy
+    ){
       awardGame(winner);
     }
   }
@@ -494,6 +504,7 @@
   function syncMatchForm(){
     document.getElementById("autoIncrement").checked = settings.autoIncrement;
     document.getElementById("integerN").value = settings.integerN;
+    document.getElementById("integerWinBy").value = settings.integerWinBy;
     document.getElementById("setFirstTo").value = settings.setFirstTo;
     document.querySelectorAll('input[name="scoringType"]').forEach(function(radio){
       radio.checked = radio.value === settings.scoringType;
@@ -506,6 +517,7 @@
       autoIncrement: document.getElementById("autoIncrement").checked,
       scoringType: scoringTypeEl ? scoringTypeEl.value : "tennis-adult",
       integerN: clampInt(document.getElementById("integerN").value, 1, 99, 11),
+      integerWinBy: clampInt(document.getElementById("integerWinBy").value, 1, 20, 2),
       setFirstTo: clampInt(document.getElementById("setFirstTo").value, 1, 99, 6)
     };
   }
@@ -527,6 +539,7 @@
       next.scoringType = "tennis-adult";
     }
     document.getElementById("integerN").value = next.integerN;
+    document.getElementById("integerWinBy").value = next.integerWinBy;
     document.getElementById("setFirstTo").value = next.setFirstTo;
     save();
     settings = next;
