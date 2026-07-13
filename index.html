@@ -86,13 +86,13 @@
 
   .settingsOverlay{
     position:fixed;inset:0;background:rgba(0,0,0,.55);
-    display:none;align-items:flex-end;justify-content:center;z-index:50;
+    display:none;align-items:center;justify-content:center;z-index:50;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   .settingsOverlay.open{display:flex}
   .settingsPanel{
-    width:min(520px,100%);max-height:min(88svh,720px);
-    background:#151c17;border:1px solid #3b4f40;border-radius:16px 16px 0 0;
+    width:min(520px,calc(100% - 24px));max-height:min(88svh,720px);
+    background:#151c17;border:1px solid #3b4f40;border-radius:16px;
     padding:14px 14px 18px;overflow-y:auto;-webkit-overflow-scrolling:touch;
   }
   .settingsHead{
@@ -272,6 +272,18 @@
       <button type="button" id="matchClose" aria-label="Close">✕</button>
     </div>
 
+    <div class="settingBlock" id="autoBlock">
+      <div class="settingRow" style="margin:0">
+        <label for="autoIncrement">Automatic scoring engine</label>
+        <label class="switch">
+          <input type="checkbox" id="autoIncrement" checked>
+          <span></span>
+        </label>
+      </div>
+      <p class="settingHint">When on, points advance games/sets automatically using the rules below. When off, edit points, games, and sets independently with no automatic rules.</p>
+    </div>
+
+    <div id="autoRulesSections">
     <div class="settingBlock">
       <h3>Presets</h3>
       <div class="presetGrid">
@@ -282,18 +294,6 @@
         <button type="button" class="presetBtn" data-preset="pro">Pro set</button>
         <button type="button" class="presetBtn" data-preset="custom">Custom</button>
       </div>
-    </div>
-
-    <div class="settingBlock">
-      <h3>Auto increment</h3>
-      <div class="settingRow">
-        <label for="autoIncrement">Automatic scoring engine</label>
-        <label class="switch">
-          <input type="checkbox" id="autoIncrement" checked>
-          <span></span>
-        </label>
-      </div>
-      <p class="settingHint">When on, points advance games/sets automatically. When off, edit points, games, and sets independently.</p>
     </div>
 
     <div class="settingBlock">
@@ -388,6 +388,7 @@
       <p class="previewText" id="formatPreview">—</p>
       <p class="validationMsg" id="validationMsg"></p>
     </div>
+    </div><!-- /autoRulesSections -->
 
     <div class="matchActions">
       <button type="button" id="matchCancel">Cancel</button>
@@ -1102,14 +1103,24 @@
   }
 
   function updateModalUI() {
+    var autoOn = !!$("autoIncrement").checked;
+    $("autoRulesSections").style.display = autoOn ? "" : "none";
+
     var setsToWin = radioVal("matchFormat") === "custom"
       ? numVal("customSetsToWin", 2)
       : Number(radioVal("matchFormat")) || 2;
-    $("decidingBlock").style.display = setsToWin > 1 ? "" : "none";
+    $("decidingBlock").style.display = (autoOn && setsToWin > 1) ? "" : "none";
 
     $("normalCustomFields").classList.toggle("show", radioVal("normalSet") === "custom");
     $("decidingFullFields").classList.toggle("show", radioVal("decidingSet") === "fullSet");
     $("mtbCustomFields").classList.toggle("show", radioVal("decidingSet") === "mtbCustom");
+
+    if (!autoOn) {
+      $("formatPreview").textContent = "Manual scoring — edit points, games, and sets yourself. Match rules are not applied.";
+      $("validationMsg").textContent = "";
+      $("matchStart").disabled = false;
+      return;
+    }
 
     var cfg = buildConfigFromForm();
     $("formatPreview").textContent = describeConfig(cfg);
