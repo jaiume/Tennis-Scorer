@@ -86,6 +86,9 @@
   .setsEmpty{color:#7f8f84;font-size:12px;padding:2px 0}
   .bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:0 0 auto}
   .bottom2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:0 0 auto}
+  .bottom2.withServer{grid-template-columns:1fr 1fr 1fr 1fr}
+  #switchServerBtn{display:none}
+  .bottom2.withServer #switchServerBtn{display:block}
   .bottom button,.bottom2 button{background:#2a372e;color:#fff;border:1px solid #48604f;padding:10px 8px;font-size:13px}
   #shareBtn{background:#b8ff3d;color:#132000;border:0}
   #jsWarning{display:none;background:#6b2d2d;padding:8px;border-radius:8px;text-align:center;font-size:13px}
@@ -265,7 +268,8 @@
     <button type="button" id="shareBtn">Share</button>
     <button type="button" id="newMatchBtn">Setup New Match</button>
   </div>
-  <div class="bottom2">
+  <div class="bottom2" id="bottom2">
+    <button type="button" id="switchServerBtn">Switch server</button>
     <button type="button" id="resetGameBtn">Reset game</button>
     <button type="button" id="resetSetBtn">Reset set</button>
     <button type="button" id="resetMatchBtn">Reset match</button>
@@ -600,6 +604,16 @@
     return (state.server + gamesPlayed + setsPlayed) % 2;
   }
 
+  function switchServer(state, history) {
+    if (!state.config.trackServer) return state;
+    if (history) pushHistory(history, state);
+    state.server = 1 - (state.server % 2);
+    if (state.tbFirstServer != null) {
+      state.tbFirstServer = 1 - (state.tbFirstServer % 2);
+    }
+    return state;
+  }
+
   function pushHistory(history, state) {
     history.push(clone(state));
     if (history.length > 200) history.shift();
@@ -905,6 +919,8 @@
     var srv = currentServer(state);
     $("card0").classList.toggle("serving", state.config.trackServer && srv === 0);
     $("card1").classList.toggle("serving", state.config.trackServer && srv === 1);
+    $("bottom2").classList.toggle("withServer", !!state.config.trackServer);
+    $("switchServerBtn").disabled = state.phase === PHASE.COMPLETE;
 
     /* Point button layout */
     ["pointBtns0", "pointBtns1", "gameBtns0", "gameBtns1", "setBtns0", "setBtns1", "tbBtns0", "tbBtns1"].forEach(function (id) {
@@ -1391,6 +1407,13 @@
   $("undoBtn").addEventListener("click", function () {
     if (!history.length) return;
     state = undo(state, history);
+    render();
+  });
+
+  $("switchServerBtn").addEventListener("click", function () {
+    if (!state.config.trackServer || state.phase === PHASE.COMPLETE) return;
+    switchServer(state, history);
+    persist();
     render();
   });
 
