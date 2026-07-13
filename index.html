@@ -1293,9 +1293,9 @@
   function buildShareText(names, s) {
     var labels = currentPointLabels(s);
     function line(i) {
-      return names[i] + " — Sets " + s.sets[i] + " · Games " + s.games[i] + " · Score " + labels[i];
+      return names[i] + " " + s.sets[i] + " / " + s.games[i] + " / " + labels[i];
     }
-    return line(0) + "\n" + line(1);
+    return "Sets / Games / Score\n" + line(0) + "\n" + line(1);
   }
 
   async function shareScore() {
@@ -1716,13 +1716,11 @@
       var s = makeState({
         config: { auto: true, game: { type: "advantage" } },
         sets: [1, 0],
-        games: [4, 3],
+        games: [3, 2],
         points: [2, 3]
       });
       var text = buildShareText(["Alice", "Bob"], s);
-      assert(text.indexOf("Alice — Sets 1 · Games 4 · Score 30") === 0, "side A line");
-      assert(text.indexOf("Bob — Sets 0 · Games 3 · Score 40") !== -1, "side B line");
-      assert(text.split("\n").length === 2, "two lines");
+      assert(text === "Sets / Games / Score\nAlice 1 / 3 / 30\nBob 0 / 2 / 40", "share format");
     }));
 
     results.push(runScenario("maybe enter MTB when sets 1-1", function () {
