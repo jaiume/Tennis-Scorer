@@ -162,6 +162,15 @@
   .inlineN input{width:72px;text-align:center;font-size:15px;padding:8px;margin:0}
   .customFields{display:none;margin-top:8px}
   .customFields.show{display:block}
+  .initScoreFields{display:none;margin-top:10px}
+  .initScoreFields.show{display:block}
+  .initScoreGrid{
+    display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px 8px;
+    align-items:center;margin-top:8px;
+  }
+  .initScoreGrid span{font-size:12px;color:#7f8f84;font-weight:700;text-align:center}
+  .initScoreGrid .initName{text-align:left;color:#c2cec4;font-size:13px}
+  .initScoreGrid input{width:100%;text-align:center;font-size:15px;padding:8px;margin:0}
   .settingsPanel input[type="number"]{-moz-appearance:textfield}
   .settingsPanel input[type="number"]::-webkit-outer-spin-button,
   .settingsPanel input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
@@ -393,9 +402,37 @@
     <div class="settingBlock">
       <h3>Format preview</h3>
       <p class="previewText" id="formatPreview">—</p>
-      <p class="validationMsg" id="validationMsg"></p>
     </div>
     </div><!-- /autoRulesSections -->
+
+    <div class="settingBlock" id="initialScoreBlock">
+      <div class="settingRow" style="margin:0">
+        <label for="setInitialScore">Set initial score</label>
+        <label class="switch">
+          <input type="checkbox" id="setInitialScore">
+          <span></span>
+        </label>
+      </div>
+      <p class="settingHint">Start mid-match with sets, games, and points already on the board. For Love/15/30/40 use 0/1/2/3.</p>
+      <div class="initScoreFields" id="initialScoreFields">
+        <div class="initScoreGrid">
+          <span></span>
+          <span>Sets</span>
+          <span>Games</span>
+          <span>Points</span>
+          <span class="initName" id="initName0">Player 1</span>
+          <input type="number" id="initSets0" min="0" max="9" value="0" inputmode="numeric">
+          <input type="number" id="initGames0" min="0" max="99" value="0" inputmode="numeric">
+          <input type="number" id="initPoints0" min="0" max="99" value="0" inputmode="numeric">
+          <span class="initName" id="initName1">Player 2</span>
+          <input type="number" id="initSets1" min="0" max="9" value="0" inputmode="numeric">
+          <input type="number" id="initGames1" min="0" max="99" value="0" inputmode="numeric">
+          <input type="number" id="initPoints1" min="0" max="99" value="0" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+
+    <p class="validationMsg" id="validationMsg"></p>
 
     <div class="matchActions">
       <button type="button" id="matchCancel">Cancel</button>
@@ -465,6 +502,94 @@
       changeEndsPending: false,
       config: clone(cfg)
     };
+  }
+
+  /** Placeholder set results so set count / server rotation stay consistent. */
+  function synthesizeCompletedSets(sets) {
+    var out = [];
+    var a = sets[0] || 0, b = sets[1] || 0;
+    while (a > 0 || b > 0) {
+      if (a >= b && a > 0) {
+        out.push({ kind: "set", winner: 0, games: [6, 0] });
+        a--;
+      } else if (b > 0) {
+        out.push({ kind: "set", winner: 1, games: [0, 6] });
+        b--;
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Align phase / TB fields with the current sets/games/points.
+   * Returns an error string if the score is not a valid in-progress position.
+   */
+  function reconcilePhase(state) {
+    var cfg = state.config;
+    if (state.sets[0] >= cfg.setsToWin || state.sets[1] >= cfg.setsToWin) {
+      return "Match is already complete — lower sets won.";
+    }
+    state.completedSets = synthesizeCompletedSets(state.sets);
+    state.changeEndsPending = false;
+    state.tbPointIndex = 0;
+    state.tbFirstServer = state.server;
+
+    if (isDecidingSet(state) && decidingIsMatchTiebreak(state)) {
+      state.phase = PHASE.MATCH_TIEBREAK;
+      state.games = [0, 0];
+      state.tbPointIndex = state.points[0] + state.points[1];
+      var mtb = matchTiebreakConfig(state);
+      var mtbWon = evaluateTiebreak(state.points, mtb);
+      if (mtbWon.won) return "Match tiebreak points already decide the match.";
+      return null;
+    }
+
+    var setCfg = activeSetConfig(state);
+    var setResult = evaluateSet(state.games, setCfg);
+    if (setResult.action === "SET_WON") {
+      return "Current games already win the set — adjust games or sets.";
+    }
+    if (setResult.action === "START_TIEBREAK") {
+      state.phase = PHASE.SET_TIEBREAK;
+      state.tbPointIndex = state.points[0] + state.points[1];
+      state.tbFirstServer = state.config.trackServer ? nextServerForTiebreak(state) : state.server;
+      var tbWon = evaluateTiebreak(state.points, setCfg.tiebreak);
+      if (tbWon.won) return "Tiebreak points already decide the set.";
+      return null;
+    }
+
+    state.phase = PHASE.GAME;
+    if (cfg.auto) {
+      var gameWon = evaluateGame(state.points, cfg.game);
+      if (gameWon.won) return "Points already win the game — lower the point score.";
+    }
+    if (cfg.courtEnds) {
+      state.changeEndsPending = shouldChangeEndsAfterGames(state);
+    }
+    return null;
+  }
+
+  function applyInitialScore(state, seed) {
+    state.sets = [seed.sets[0], seed.sets[1]];
+    state.games = [seed.games[0], seed.games[1]];
+    state.points = [seed.points[0], seed.points[1]];
+    return reconcilePhase(state);
+  }
+
+  function validateInitialScore(cfg, seed) {
+    var msgs = [];
+    function bad(n) { return !Number.isFinite(n) || n < 0; }
+    if (bad(seed.sets[0]) || bad(seed.sets[1])) msgs.push("Sets must be 0 or more.");
+    if (bad(seed.games[0]) || bad(seed.games[1])) msgs.push("Games must be 0 or more.");
+    if (bad(seed.points[0]) || bad(seed.points[1])) msgs.push("Points must be 0 or more.");
+    if (seed.sets[0] >= cfg.setsToWin || seed.sets[1] >= cfg.setsToWin) {
+      msgs.push("Sets won must be below sets-to-win.");
+    }
+    if (msgs.length) return msgs;
+    var probe = createInitialState(cfg);
+    var err = applyInitialScore(probe, seed);
+    if (err) msgs.push(err);
+    return msgs;
   }
 
   /** ITF-style: change ends after odd games in a set, and every 6 tie-break points. */
@@ -828,6 +953,10 @@
     resetSet: resetSet,
     resetMatch: resetMatch,
     adjustManual: adjustManual,
+    applyInitialScore: applyInitialScore,
+    reconcilePhase: reconcilePhase,
+    validateInitialScore: validateInitialScore,
+    synthesizeCompletedSets: synthesizeCompletedSets,
     clone: clone
   };
 
@@ -1120,6 +1249,14 @@
     return msgs;
   }
 
+  function buildInitialScoreFromForm() {
+    return {
+      sets: [Math.max(0, numVal("initSets0", 0)), Math.max(0, numVal("initSets1", 0))],
+      games: [Math.max(0, numVal("initGames0", 0)), Math.max(0, numVal("initGames1", 0))],
+      points: [Math.max(0, numVal("initPoints0", 0)), Math.max(0, numVal("initPoints1", 0))]
+    };
+  }
+
   function describeConfig(cfg) {
     var parts = [];
     parts.push(cfg.auto ? "Auto scoring" : "Manual scoring");
@@ -1166,16 +1303,22 @@
     $("decidingFullFields").classList.toggle("show", radioVal("decidingSet") === "fullSet");
     $("mtbCustomFields").classList.toggle("show", radioVal("decidingSet") === "mtbCustom");
 
-    if (!autoOn) {
-      $("formatPreview").textContent = "Manual scoring — edit points, games, and sets yourself. Match rules are not applied.";
-      $("validationMsg").textContent = "";
-      $("matchStart").disabled = false;
-      return;
-    }
+    var initOn = !!$("setInitialScore").checked;
+    $("initialScoreFields").classList.toggle("show", initOn);
+    $("initName0").textContent = playerName(0);
+    $("initName1").textContent = playerName(1);
 
     var cfg = buildConfigFromForm();
-    $("formatPreview").textContent = describeConfig(cfg);
-    var msgs = validateConfig(cfg);
+    if (!autoOn) {
+      $("formatPreview").textContent = "Manual scoring — edit points, games, and sets yourself. Match rules are not applied.";
+    } else {
+      $("formatPreview").textContent = describeConfig(cfg);
+    }
+
+    var msgs = autoOn ? validateConfig(cfg) : [];
+    if (initOn) {
+      msgs = msgs.concat(validateInitialScore(cfg, buildInitialScoreFromForm()));
+    }
     $("validationMsg").textContent = msgs.join(" ");
     $("matchStart").disabled = msgs.length > 0;
   }
@@ -1188,6 +1331,10 @@
     $("trackServer").checked = false;
     $("courtEnds").checked = false;
     $("tbLastSetOnly").checked = false;
+    $("setInitialScore").checked = false;
+    ["initSets0", "initSets1", "initGames0", "initGames1", "initPoints0", "initPoints1"].forEach(function (id) {
+      $(id).value = "0";
+    });
 
     if (name === "standard") {
       setRadio("matchFormat", "2");
@@ -1236,14 +1383,27 @@
 
   function startNewMatch() {
     var cfg = buildConfigFromForm();
-    var msgs = validateConfig(cfg);
+    var msgs = cfg.auto ? validateConfig(cfg) : [];
+    var seed = null;
+    if ($("setInitialScore").checked) {
+      seed = buildInitialScoreFromForm();
+      msgs = msgs.concat(validateInitialScore(cfg, seed));
+    }
     if (msgs.length) {
       $("validationMsg").textContent = msgs.join(" ");
+      $("matchStart").disabled = true;
       return;
     }
     cfg.names = [playerName(0), playerName(1)];
     history = [];
     state = createInitialState(cfg);
+    if (seed) {
+      var err = applyInitialScore(state, seed);
+      if (err) {
+        $("validationMsg").textContent = err;
+        return;
+      }
+    }
     closeModal();
     render();
   }
@@ -1760,6 +1920,31 @@
       var h = [];
       winGameAdv(s, h, 0);
       assert(s.phase === PHASE.SET_TIEBREAK, "TB in deciding set, got " + s.phase);
+    }));
+
+    results.push(runScenario("initial score: mid-set seed", function () {
+      var s = createInitialState(defaultMatchConfig());
+      var err = applyInitialScore(s, { sets: [1, 0], games: [3, 2], points: [2, 1] });
+      assert(!err, "should accept seed: " + err);
+      assert(s.sets[0] === 1 && s.sets[1] === 0, "sets");
+      assert(s.games[0] === 3 && s.games[1] === 2, "games");
+      assert(s.points[0] === 2 && s.points[1] === 1, "points");
+      assert(s.phase === PHASE.GAME, "phase GAME");
+      assert(s.completedSets.length === 1 && s.completedSets[0].winner === 0, "completed set");
+    }));
+
+    results.push(runScenario("initial score: enters set TB at 6-6", function () {
+      var s = createInitialState(defaultMatchConfig());
+      var err = applyInitialScore(s, { sets: [0, 0], games: [6, 6], points: [3, 2] });
+      assert(!err, "accept TB seed: " + err);
+      assert(s.phase === PHASE.SET_TIEBREAK, "SET_TIEBREAK got " + s.phase);
+      assert(s.points[0] === 3 && s.points[1] === 2, "TB points kept");
+    }));
+
+    results.push(runScenario("initial score: rejects completed match", function () {
+      var cfg = defaultMatchConfig();
+      var msgs = validateInitialScore(cfg, { sets: [2, 0], games: [0, 0], points: [0, 0] });
+      assert(msgs.length > 0, "should reject");
     }));
 
     results.push(runScenario("numeric game scoring", function () {
