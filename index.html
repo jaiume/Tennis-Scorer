@@ -384,6 +384,10 @@
         <label for="courtEnds">Change ends</label>
         <label class="switch"><input type="checkbox" id="courtEnds"><span></span></label>
       </div>
+      <div class="settingRow" id="tbLastSetOnlyRow">
+        <label for="tbLastSetOnly">Tiebreak in last set only</label>
+        <label class="switch"><input type="checkbox" id="tbLastSetOnly"><span></span></label>
+      </div>
     </div>
 
     <div class="settingBlock">
@@ -442,6 +446,7 @@
       deciding: { type: "sameAsNormal" },
       trackServer: false,
       courtEnds: false,
+      tiebreakLastSetOnly: false,
       names: ["Player 1", "Player 2"]
     };
   }
@@ -480,10 +485,18 @@
   }
 
   function activeSetConfig(state) {
+    var cfg;
     if (isDecidingSet(state) && state.config.deciding.type === "fullSet") {
-      return state.config.deciding.set;
+      cfg = state.config.deciding.set;
+    } else {
+      cfg = state.config.set;
     }
-    return state.config.set;
+    /* Early sets play without a set TB when "last set only" is on. */
+    var lastSet = state.config.setsToWin === 1 || isDecidingSet(state);
+    if (state.config.tiebreakLastSetOnly && !lastSet) {
+      return Object.assign({}, cfg, { tiebreakAt: null });
+    }
+    return cfg;
   }
 
   function decidingIsMatchTiebreak(state) {
@@ -1083,6 +1096,7 @@
       deciding: buildDecidingConfig(),
       trackServer: $("trackServer").checked,
       courtEnds: $("courtEnds").checked,
+      tiebreakLastSetOnly: $("tbLastSetOnly").checked,
       names: [playerName(0), playerName(1)]
     };
   }
@@ -1117,7 +1131,11 @@
     var s = cfg.set;
     var setDesc = "sets to " + s.gamesToWin + " win by " + s.winBy;
     if (s.tiebreakAt == null) setDesc += ", no TB";
-    else setDesc += ", TB at " + s.tiebreakAt + "–" + s.tiebreakAt + " (to " + s.tiebreak.pointsToWin + ")";
+    else if (cfg.tiebreakLastSetOnly && cfg.setsToWin > 1) {
+      setDesc += ", TB at " + s.tiebreakAt + "–" + s.tiebreakAt + " in last set only (to " + s.tiebreak.pointsToWin + ")";
+    } else {
+      setDesc += ", TB at " + s.tiebreakAt + "–" + s.tiebreakAt + " (to " + s.tiebreak.pointsToWin + ")";
+    }
     parts.push(setDesc);
     if (cfg.setsToWin > 1) {
       var d = cfg.deciding;
@@ -1142,6 +1160,7 @@
       ? numVal("customSetsToWin", 2)
       : Number(radioVal("matchFormat")) || 2;
     $("decidingBlock").style.display = (autoOn && setsToWin > 1) ? "" : "none";
+    $("tbLastSetOnlyRow").style.display = (autoOn && setsToWin > 1) ? "" : "none";
 
     $("normalCustomFields").classList.toggle("show", radioVal("normalSet") === "custom");
     $("decidingFullFields").classList.toggle("show", radioVal("decidingSet") === "fullSet");
@@ -1168,6 +1187,7 @@
     $("autoIncrement").checked = true;
     $("trackServer").checked = false;
     $("courtEnds").checked = false;
+    $("tbLastSetOnly").checked = false;
 
     if (name === "standard") {
       setRadio("matchFormat", "2");
@@ -1701,6 +1721,45 @@
       assert(r.action === "CONTINUE", "continue without TB");
       r = evaluateSet([8, 6], adv);
       assert(r.action === "SET_WON", "8-6 wins advantage set");
+    }));
+
+    results.push(runScenario("TB last set only: no TB in early sets", function () {
+      var s = makeState({
+        config: {
+          auto: true,
+          setsToWin: 2,
+          game: { type: "advantage" },
+          set: { gamesToWin: 6, winBy: 2, tiebreakAt: 6, tiebreak: { pointsToWin: 7, winBy: 2 } },
+          deciding: { type: "sameAsNormal" },
+          tiebreakLastSetOnly: true
+        },
+        sets: [0, 0],
+        games: [5, 6]
+      });
+      var h = [];
+      winGameAdv(s, h, 0);
+      assert(s.phase === PHASE.GAME, "no TB in set 1, got " + s.phase);
+      assert(s.games[0] === 6 && s.games[1] === 6, "still 6-6");
+      var cfg = activeSetConfig(s);
+      assert(cfg.tiebreakAt == null, "active set has no TB");
+    }));
+
+    results.push(runScenario("TB last set only: TB in deciding set", function () {
+      var s = makeState({
+        config: {
+          auto: true,
+          setsToWin: 2,
+          game: { type: "advantage" },
+          set: { gamesToWin: 6, winBy: 2, tiebreakAt: 6, tiebreak: { pointsToWin: 7, winBy: 2 } },
+          deciding: { type: "sameAsNormal" },
+          tiebreakLastSetOnly: true
+        },
+        sets: [1, 1],
+        games: [5, 6]
+      });
+      var h = [];
+      winGameAdv(s, h, 0);
+      assert(s.phase === PHASE.SET_TIEBREAK, "TB in deciding set, got " + s.phase);
     }));
 
     results.push(runScenario("numeric game scoring", function () {
