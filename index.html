@@ -310,7 +310,8 @@
         <button type="button" class="presetBtn" data-preset="standard">Standard Bo3</button>
         <button type="button" class="presetBtn" data-preset="noAdMtb">No-Ad + MTB</button>
         <button type="button" class="presetBtn" data-preset="advantage">Advantage set</button>
-        <button type="button" class="presetBtn" data-preset="fast4">Fast4-style</button>
+        <button type="button" class="presetBtn" data-preset="fast4">Fast4 (TB 3–3 + MTB)</button>
+        <button type="button" class="presetBtn" data-preset="fast4Tb4">Fast4 (TB 4–4 / 10TB)</button>
         <button type="button" class="presetBtn" data-preset="pro">Pro set</button>
         <button type="button" class="presetBtn" data-preset="custom">Custom</button>
       </div>
@@ -346,6 +347,7 @@
         <label class="scoringOption"><input type="radio" name="normalSet" value="standardTb" checked><div><strong>Standard TB set</strong><span>First to 6, win by 2, TB at 6–6</span></div></label>
         <label class="scoringOption"><input type="radio" name="normalSet" value="advantage"><div><strong>Advantage set</strong><span>First to 6, win by 2, no tiebreak</span></div></label>
         <label class="scoringOption"><input type="radio" name="normalSet" value="short"><div><strong>Short set</strong><span>First to 4, win by 2, TB at 3–3</span></div></label>
+        <label class="scoringOption"><input type="radio" name="normalSet" value="shortTb4"><div><strong>Fast4 — TB at 4–4</strong><span>First to 4, win by 2, 7-pt TB at 4–4</span></div></label>
         <label class="scoringOption"><input type="radio" name="normalSet" value="pro"><div><strong>Pro set</strong><span>First to 8, win by 2, TB at 8–8</span></div></label>
         <label class="scoringOption"><input type="radio" name="normalSet" value="custom"><div><strong>Custom</strong><span>Configure fields</span>
           <div class="customFields" id="normalCustomFields">
@@ -363,6 +365,7 @@
       <h3>Deciding set</h3>
       <div class="scoringOptions">
         <label class="scoringOption"><input type="radio" name="decidingSet" value="sameAsNormal" checked><div><strong>Same as normal sets</strong></div></label>
+        <label class="scoringOption"><input type="radio" name="decidingSet" value="shortTb10"><div><strong>Fast4 with 10-pt TB</strong><span>First to 4, win by 2, 10-pt TB at 4–4</span></div></label>
         <label class="scoringOption"><input type="radio" name="decidingSet" value="fullSet"><div><strong>Full set (custom rules)</strong>
           <div class="customFields" id="decidingFullFields">
             <div class="inlineN"><label for="dsGamesToWin">Games to win</label><input type="number" id="dsGamesToWin" min="1" max="99" value="6" inputmode="numeric"></div>
@@ -1159,6 +1162,9 @@
     if (choice === "short") {
       return { gamesToWin: 4, winBy: 2, tiebreakAt: 3, tiebreak: { pointsToWin: 7, winBy: 2 } };
     }
+    if (choice === "shortTb4") {
+      return { gamesToWin: 4, winBy: 2, tiebreakAt: 4, tiebreak: { pointsToWin: 7, winBy: 2 } };
+    }
     if (choice === "pro") {
       return { gamesToWin: 8, winBy: 2, tiebreakAt: 8, tiebreak: { pointsToWin: 7, winBy: 2 } };
     }
@@ -1187,6 +1193,17 @@
 
   function buildDecidingConfig() {
     var d = radioVal("decidingSet");
+    if (d === "shortTb10") {
+      return {
+        type: "fullSet",
+        set: {
+          gamesToWin: 4,
+          winBy: 2,
+          tiebreakAt: 4,
+          tiebreak: { pointsToWin: 10, winBy: 2 }
+        }
+      };
+    }
     if (d === "fullSet") {
       var tba = blankNum("dsTiebreakAt");
       return {
@@ -1277,8 +1294,13 @@
     if (cfg.setsToWin > 1) {
       var d = cfg.deciding;
       if (d.type === "sameAsNormal") parts.push("deciding set same as normal");
-      else if (d.type === "fullSet") parts.push("custom deciding set");
-      else if (d.type === "matchTiebreak") {
+      else if (d.type === "fullSet") {
+        var ds = d.set;
+        var dd = "deciding to " + ds.gamesToWin + " win by " + ds.winBy;
+        if (ds.tiebreakAt == null) dd += ", no TB";
+        else dd += ", TB at " + ds.tiebreakAt + "–" + ds.tiebreakAt + " (to " + ds.tiebreak.pointsToWin + ")";
+        parts.push(dd);
+      } else if (d.type === "matchTiebreak") {
         parts.push(d.tiebreak.pointsToWin + "-pt match tiebreak");
       }
     }
@@ -1356,6 +1378,11 @@
       setRadio("gameScoring", "noAd");
       setRadio("normalSet", "short");
       setRadio("decidingSet", "mtb10");
+    } else if (name === "fast4Tb4") {
+      setRadio("matchFormat", "2");
+      setRadio("gameScoring", "noAd");
+      setRadio("normalSet", "shortTb4");
+      setRadio("decidingSet", "shortTb10");
     } else if (name === "pro") {
       setRadio("matchFormat", "1");
       setRadio("gameScoring", "advantage");
@@ -1780,6 +1807,48 @@
       /* win game to 3-3 → TB */
       for (var i = 0; i < 4; i++) awardPoint(s, 1, h);
       assert(s.phase === PHASE.SET_TIEBREAK, "enter TB at 3-3");
+    }));
+
+    results.push(runScenario("Fast4 TB at 4-4 uses 7-pt TB", function () {
+      var set4 = { gamesToWin: 4, winBy: 2, tiebreakAt: 4, tiebreak: { pointsToWin: 7, winBy: 2 } };
+      assert(evaluateSet([4, 2], set4).action === "SET_WON", "4-2 wins without TB");
+      assert(evaluateSet([4, 4], set4).action === "START_TIEBREAK", "TB at 4-4");
+      var s = makeState({
+        config: { auto: true, setsToWin: 1, game: { type: "noAd" }, set: set4 },
+        games: [4, 3]
+      });
+      var h = [];
+      for (var i = 0; i < 4; i++) awardPoint(s, 1, h);
+      assert(s.phase === PHASE.SET_TIEBREAK, "enter 7-pt TB at 4-4");
+      for (var j = 0; j < 7; j++) awardPoint(s, 0, h);
+      assert(s.phase === PHASE.COMPLETE && s.sets[0] === 1, "won via 7-pt TB");
+      assert(s.completedSets[0].tiebreakPoints[0] === 7, "7-pt TB stored");
+    }));
+
+    results.push(runScenario("deciding Fast4 uses 10-pt TB at 4-4", function () {
+      var normal = { gamesToWin: 4, winBy: 2, tiebreakAt: 4, tiebreak: { pointsToWin: 7, winBy: 2 } };
+      var deciding = {
+        type: "fullSet",
+        set: { gamesToWin: 4, winBy: 2, tiebreakAt: 4, tiebreak: { pointsToWin: 10, winBy: 2 } }
+      };
+      var s = makeState({
+        config: {
+          auto: true,
+          setsToWin: 2,
+          game: { type: "noAd" },
+          set: normal,
+          deciding: deciding
+        },
+        sets: [1, 1],
+        games: [4, 3]
+      });
+      var h = [];
+      for (var i = 0; i < 4; i++) awardPoint(s, 1, h);
+      assert(s.phase === PHASE.SET_TIEBREAK, "deciding TB at 4-4");
+      assert(activeSetConfig(s).tiebreak.pointsToWin === 10, "10-pt TB");
+      for (var j = 0; j < 10; j++) awardPoint(s, 0, h);
+      assert(s.phase === PHASE.COMPLETE && s.sets[0] === 2, "won via 10-pt TB");
+      assert(s.completedSets[s.completedSets.length - 1].tiebreakPoints[0] === 10, "10-pt stored");
     }));
 
     results.push(runScenario("pro set first to 8, TB at 8-8", function () {
